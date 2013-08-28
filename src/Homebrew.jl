@@ -1,0 +1,3 @@
+module Homebrew
+
+end # module
