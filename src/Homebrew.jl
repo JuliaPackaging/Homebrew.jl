@@ -69,7 +69,7 @@ function update_env()
         ENV["PATH"] = "$(joinpath(brew_prefix, "bin")):$(joinpath(brew_prefix, "sbin")):$(ENV["PATH"])"
     end
 
-    if !contains(DL_LOAD_PATH, joinpath(brew_prefix,"lib"))
+    if !(joinpath(brew_prefix,"lib") in DL_LOAD_PATH)
         push!(DL_LOAD_PATH, joinpath(brew_prefix, "lib") )
     end
     return
