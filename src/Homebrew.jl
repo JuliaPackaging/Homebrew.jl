@@ -5,8 +5,8 @@ import Base: show
 
 
 # Homebrew prefix
-const prefix = Pkg.dir("Homebrew", "deps", "usr")
-const tappath = joinpath(prefix,"Library","Taps","staticfloat-juliadeps")
+const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
+const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps")
 
 const BREW_URL = "https://github.com/staticfloat/homebrew.git"
 const BREW_BRANCH = "kegpkg"
@@ -18,7 +18,6 @@ macro doit( ex )
     :(try $ex end)
 end
 
-
 function init()
     # Let's see if Homebrew is installed.  If not, let's do that first!
     install_brew()
@@ -28,31 +27,31 @@ function init()
 end
 
 function install_brew()
-    # Ensure prefix exists
-    @doit mkdir(prefix)
+    # Ensure brew_prefix exists
+    @doit mkdir(brew_prefix)
 
     # Make sure brew isn't already installed
-    if isexecutable( joinpath(prefix, "bin", "brew") )
+    if isexecutable( joinpath(brew_prefix, "bin", "brew") )
         return
     end
 
-    # Clone brew into prefix
+    # Clone brew into brew_prefix
     Base.info("Cloning brew from $BREW_URL")
-    try Git.run(`clone $BREW_URL -b $BREW_BRANCH $prefix`)
+    try Git.run(`clone $BREW_URL -b $BREW_BRANCH $brew_prefix`)
     catch
-        warn("Could not clone $BREW_URL/$BREW_BRANCH into $(prefix)!")
+        warn("Could not clone $BREW_URL/$BREW_BRANCH into $brew_prefix!")
         rethrow()
     end
 
     # Download/install packaged install_name_tools
-    try run(`curl $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(prefix,"bin"))`)
+    try run(`curl $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
     catch
-        warn("Could not download/extract $BOTTLE_SERVER/cctools_bundle.tar.gz into $(joinpath(prefix,"bin"))!")
+        warn("Could not download/extract $BOTTLE_SERVER/cctools_bundle.tar.gz into $(joinpath(brew_prefix,"bin"))!")
         rethrow()
     end
 
     # Tap staticfloat/juliadeps
-    try run(`$(joinpath(prefix, "bin", "brew")) tap staticfloat/juliadeps --quiet`)
+    try run(`$(joinpath(brew_prefix, "bin", "brew")) tap staticfloat/juliadeps --quiet`)
     catch
         warn( "Could not tap staticfloat/juliadeps!" )
         rethrow()
@@ -60,18 +59,18 @@ function install_brew()
 end
 
 function update()
-    Git.run(`pull origin $BREW_BRANCH`, dir=prefix)
+    Git.run(`pull origin $BREW_BRANCH`, dir=brew_prefix)
     Git.run(`pull`, dir=tappath)
 end
 
 # Update environment variables so we can natively call brew, otool, etc...
 function update_env()
-    if length(Base.search(ENV["PATH"], joinpath(prefix, "bin"))) == 0
-        ENV["PATH"] = "$(joinpath(prefix, "bin")):$(joinpath(prefix, "sbin")):$(ENV["PATH"])"
+    if length(Base.search(ENV["PATH"], joinpath(brew_prefix, "bin"))) == 0
+        ENV["PATH"] = "$(joinpath(brew_prefix, "bin")):$(joinpath(brew_prefix, "sbin")):$(ENV["PATH"])"
     end
 
-    if !contains(DL_LOAD_PATH, joinpath(prefix,"lib"))
-        push!(DL_LOAD_PATH, joinpath(prefix, "lib") )
+    if !contains(DL_LOAD_PATH, joinpath(brew_prefix,"lib"))
+        push!(DL_LOAD_PATH, joinpath(brew_prefix, "lib") )
     end
     return
 end
@@ -82,6 +81,14 @@ immutable BrewPkg
 
     BrewPkg(n, v) = new(n,v)
     BrewPkg(a::Array) = new(a[1], a[2])
+end
+
+function prefix()
+    brew_prefix
+end
+
+function prefix(pkg)
+    split(split(info(pkg),"\n")[3])[1]
 end
 
 function show(io::IO, b::BrewPkg)
@@ -145,12 +152,12 @@ function installed(pkg, version = nothing)
     if version != nothing
         any([p.name == pkg && p.version == version for p in list()])
     else
-        isdir(joinpath(prefix,"Cellar",pkg))
+        isdir(joinpath(brew_prefix,"Cellar",pkg))
     end
 end
 
 function linked(pkg)
-    return islink(joinpath(prefix,"Library","LinkedKegs",pkg))
+    return islink(joinpath(brew_prefix,"Library","LinkedKegs",pkg))
 end
 
 function rm(pkg)

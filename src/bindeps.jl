@@ -18,7 +18,7 @@ function package_available(p::HB)
 	return all(x -> search(x), pkgs)
 end
 
-libdir(p::HB, dep) = joinpath(prefix, "lib")
+libdir(p::HB, dep) = joinpath(brew_prefix, "lib")
 
 provider(::Type{HB}, packages::Vector{ASCIIString}; opts...) = HB(packages)
 
