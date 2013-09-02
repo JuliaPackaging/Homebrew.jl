@@ -1,10 +1,13 @@
 # This file contains the necessary ingredients to create a PackageManager for BinDeps
 using BinDeps
 import BinDeps: PackageManager, can_use, package_available, libdir, generate_steps, LibraryDependency, provider
+import Base: show
 
 type HB <: PackageManager
 	packages
 end
+
+show(io::IO, hb::HB) = println(io, "Homebrew")
 
 # Only return true on Darwin platforms
 can_use(::Type{HB}) = OS_NAME == :Darwin
