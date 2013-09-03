@@ -63,7 +63,7 @@ end
 # Update environment variables so we can natively call brew, otool, etc...
 function update_env()
     if length(Base.search(ENV["PATH"], joinpath(brew_prefix, "bin"))) == 0
-        ENV["PATH"] = "$(joinpath(brew_prefix, "bin")):$(joinpath(brew_prefix, "sbin")):$(ENV["PATH"])"
+        ENV["PATH"] = "$(realpath(joinpath(brew_prefix, "bin"))):$(joinpath(brew_prefix, "sbin")):$(ENV["PATH"])"
     end
 
     if !(joinpath(brew_prefix,"lib") in DL_LOAD_PATH)
