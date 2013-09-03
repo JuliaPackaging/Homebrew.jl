@@ -7,7 +7,9 @@ type HB <: PackageManager
 	packages
 end
 
-show(io::IO, hb::HB) = println(io, "Homebrew")
+show(io::IO, hb::HB) = write(io, "Homebrew Bottles")
+
+
 
 # Only return true on Darwin platforms
 can_use(::Type{HB}) = OS_NAME == :Darwin

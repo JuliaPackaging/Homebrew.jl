@@ -10,13 +10,8 @@ const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps")
 
 const BREW_URL = "https://github.com/staticfloat/homebrew.git"
 const BREW_BRANCH = "kegpkg"
-const BOTTLE_SERVER = "juliabottles.s3-website-us-east-1.amazonaws.com"
+const BOTTLE_SERVER = "http://archive.org/download/julialang/"
 
-
-# Ignore failure, just do it!
-macro doit( ex )
-    :(try $ex end)
-end
 
 function init()
     # Let's see if Homebrew is installed.  If not, let's do that first!
@@ -28,33 +23,35 @@ end
 
 function install_brew()
     # Ensure brew_prefix exists
-    @doit mkdir(brew_prefix)
+    try mkdir(brew_prefix); end
 
     # Make sure brew isn't already installed
-    if isexecutable( joinpath(brew_prefix, "bin", "brew") )
-        return
+    if !isexecutable( joinpath(brew_prefix, "bin", "brew") )
+        # Clone brew into brew_prefix
+        Base.info("Cloning brew from $BREW_URL")
+        try Git.run(`clone $BREW_URL -b $BREW_BRANCH $brew_prefix`)
+        catch
+            warn("Could not clone $BREW_URL/$BREW_BRANCH into $brew_prefix!")
+            rethrow()
+        end
     end
 
-    # Clone brew into brew_prefix
-    Base.info("Cloning brew from $BREW_URL")
-    try Git.run(`clone $BREW_URL -b $BREW_BRANCH $brew_prefix`)
-    catch
-        warn("Could not clone $BREW_URL/$BREW_BRANCH into $brew_prefix!")
-        rethrow()
+    if !isexecutable(joinpath(brew_prefix,"bin","otool"))
+        # Download/install packaged install_name_tools
+        try run(`curl $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
+        catch
+            warn("Could not download/extract $BOTTLE_SERVER/cctools_bundle.tar.gz into $(joinpath(brew_prefix,"bin"))!")
+            rethrow()
+        end
     end
 
-    # Download/install packaged install_name_tools
-    try run(`curl $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
-    catch
-        warn("Could not download/extract $BOTTLE_SERVER/cctools_bundle.tar.gz into $(joinpath(brew_prefix,"bin"))!")
-        rethrow()
-    end
-
-    # Tap staticfloat/juliadeps
-    try run(`$(joinpath(brew_prefix, "bin", "brew")) tap staticfloat/juliadeps --quiet`)
-    catch
-        warn( "Could not tap staticfloat/juliadeps!" )
-        rethrow()
+    if !isdir(tappath)
+        # Tap staticfloat/juliadeps
+        try run(`$(joinpath(brew_prefix, "bin", "brew")) tap staticfloat/juliadeps --quiet`)
+        catch
+            warn( "Could not tap staticfloat/juliadeps!" )
+            rethrow()
+        end
     end
 end
 
