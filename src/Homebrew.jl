@@ -21,6 +21,24 @@ function init()
     update_env()
 end
 
+function link_bundled_dylibs()
+    # This function links dylibs that are bundled with Julia (e.g. libgmp) into
+    # Homebrew's lib/ folder so that dependencies such as gnutls can find them
+    bundled_dylibs = ["libgmp"]
+
+    jlib = abspath(joinpath(JULIA_HOME,"..","lib","julia"))
+
+    # Search for the bundled_dylibs in our private lib directory
+    for f in readdir(jlib)
+        symlink = abspath(joinpath(brew_prefix,"lib",basename(f)))
+        for d in bundled_dylibs
+            if contains(f, d) && !isfile(symlink)
+                run(`ln -s $(joinpath(jlib,f)) $symlink`)
+            end
+        end
+    end
+end
+
 function install_brew()
     # Ensure brew_prefix exists
     try mkdir(brew_prefix); end
@@ -53,6 +71,9 @@ function install_brew()
             rethrow()
         end
     end
+
+    # link bundled dylibs into $brew_prefix/lib
+    link_bundled_dylibs()
 end
 
 function update()
