@@ -27,6 +27,7 @@ function link_bundled_dylibs()
     bundled_dylibs = ["libgmp"]
 
     jlib = abspath(joinpath(JULIA_HOME,"..","lib","julia"))
+    mkpath(joinpath(brew_prefix,"lib"))
 
     # Search for the bundled_dylibs in our private lib directory
     for f in readdir(jlib)
