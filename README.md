@@ -34,3 +34,32 @@ provides( Homebrew.HB, "libffi", libffi, os = :Darwin )
 
 Then, the `Homebrew` package will automatically download the requisite bottles for any dependencies you state it can provide.
 
+
+Why not using system wide Homebrew ?
+====================================
+
+We decided not to support this for two reasons:
+
+Some of the formulae in [the used tap](https://github.com/staticfloat/homebrew-juliadeps) are
+specifically patched to work with Julia. Some of these patches have not (or will not) be merged
+back into Homebrew mainline, so we don't want to conflict with any packages the user
+may or may not have installed.
+
+We have modified Homebrew itself to support installation of Formulae without a compiler available.
+
+Users can modify Homebrew's internal workings, it's better to have a known good Homebrew fork than
+to risk bug reports from users that have unknowingly merged patches into Homebrew that break
+functionality we require
+
+The biggest reason is the patches that have been applied to Homebrew itself.
+This package is pretty much meant to serve bottles only;
+you should never need to compile anything when using `Homebrew.jl`.
+This is on purpose, as there are many users who may wish to install packages for Julia,
+but don't have Xcode installed.
+
+If you already have something installed, and it is usable,
+(e.g. `BinDeps` can load it and it passes any quick internal tests the Package authors have defined)
+then `Homebrew.jl` won't try to install it. `BinDeps` always checks to see if there is a library
+in the current load path that satisfies the requirements setup by package authors,
+and if there is, it doesn't build anything.
+
