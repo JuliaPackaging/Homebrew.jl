@@ -34,7 +34,7 @@ function link_bundled_dylibs()
         symlink = abspath(joinpath(brew_prefix,"lib",basename(f)))
         for d in bundled_dylibs
             if contains(f, d) && !isfile(symlink)
-                run(`ln -s $(joinpath(jlib,f)) $symlink`)
+                run(`ln -fs $(joinpath(jlib,f)) $symlink`)
             end
         end
     end
