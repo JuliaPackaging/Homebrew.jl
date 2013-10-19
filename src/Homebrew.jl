@@ -3,9 +3,11 @@ module Homebrew
 using Base.Git
 import Base: show
 
+include("ShlibList.jl")
 
 # Homebrew prefix
 const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
+const brew = joinpath(brew_prefix,"bin","brew")
 const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps")
 
 const BREW_URL = "https://github.com/staticfloat/homebrew.git"
@@ -24,28 +26,43 @@ end
 function link_bundled_dylibs()
     # This function links dylibs that are bundled with Julia (e.g. libgmp) into
     # Homebrew's lib/ folder so that dependencies such as gnutls can find them
-    bundled_dylibs = ["libgmp"]
+    bundled_dylibs = ["libgmp", "libgfortran", "libquadmath", "libgcc_s"]
 
-    jlib = abspath(joinpath(JULIA_HOME,"..","lib","julia"))
+    # Make sure our `lib` is 
     mkpath(joinpath(brew_prefix,"lib"))
 
-    # Search for the bundled_dylibs in our private lib directory
-    for f in readdir(jlib)
-        symlink = abspath(joinpath(brew_prefix,"lib",basename(f)))
-        for d in bundled_dylibs
-            if contains(f, d) && !isfile(symlink)
-                run(`ln -fs $(joinpath(jlib,f)) $symlink`)
-            end
+    # Get the paths of all shared libraries loaded by this process
+    shlibs = shlib_list()
+
+    # Make sure gfortran cellar directories are made
+    gfortran_cellar = joinpath(brew_prefix,"Cellar","gfortran","4.8.1")
+    mkpath(joinpath(gfortran_cellar,"lib"))
+    mkpath(joinpath(gfortran_cellar,"gfortran","lib"))
+
+    # We already have these dylibs loaded; let's find them and symlink them
+    for d in bundled_dylibs
+        f = filter( x->contains(x,d), shlibs)[1]
+        symlink = abspath(joinpath(gfortran_cellar,"lib",basename(f)))
+        if !isfile(symlink)
+            run(`ln -fs $f $symlink`)
+        end
+
+        symlink = abspath(joinpath(gfortran_cellar,"gfortran","lib",basename(f)))
+        if !isfile(symlink)
+            run(`ln -fs $f $symlink`)
         end
     end
+
+    # Finally, make sure that fake gfortran keg is linked by `$brew`
+    run(`$brew link gfortran`)
 end
 
 function install_brew()
     # Ensure brew_prefix exists
-    try mkdir(brew_prefix); end
+    mkpath(brew_prefix)
 
     # Make sure brew isn't already installed
-    if !isexecutable( joinpath(brew_prefix, "bin", "brew") )
+    if !isexecutable( brew )
         # Clone brew into brew_prefix
         Base.info("Cloning brew from $BREW_URL")
         try Git.run(`clone $BREW_URL -b $BREW_BRANCH $brew_prefix`)
@@ -122,7 +139,7 @@ end
 
 # List all installed packages as a list of (name,version) lists
 function list()
-    brew_list = readchomp(`brew list --versions`)
+    brew_list = readchomp(`$brew list --versions`)
     if length(brew_list) != 0
         [BrewPkg(split(f)) for f in split(brew_list,"\n")]
     else
@@ -132,7 +149,7 @@ end
 
 # Print out info for a specific package
 function info(pkg)
-    readchomp(`brew info staticfloat/juliadeps/$pkg`)
+    readchomp(`$brew info staticfloat/juliadeps/$pkg`)
 end
 
 # Install a package
@@ -159,9 +176,9 @@ function add(pkg, version=nothing, git_hash=nothing)
             run(`git checkout $git_hash $pkg.rb`)
         end
         if linked( pkg )
-            run(`brew unlink --quiet $pkg`)
+            run(`$brew unlink --quiet $pkg`)
         end
-        run(`brew install staticfloat/juliadeps/$pkg`)
+        run(`$brew install staticfloat/juliadeps/$pkg`)
         if git_hash != nothing
             run(`git checkout HEAD $pkg.rb`)
         end
@@ -186,7 +203,7 @@ function linked(pkg)
 end
 
 function rm(pkg)
-    run(`brew rm --force $pkg`)
+    run(`$brew rm --force $pkg`)
 end
 
 function rm(pkg::BrewPkg)
