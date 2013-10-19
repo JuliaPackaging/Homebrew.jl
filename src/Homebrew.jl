@@ -78,8 +78,10 @@ function install_brew()
 end
 
 function update()
-    Git.run(`pull origin $BREW_BRANCH`, dir=brew_prefix)
-    Git.run(`pull`, dir=tappath)
+    Git.run(`fetch origin $BREW_BRANCH`, dir=brew_prefix)
+    Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
+    Git.run(`fetch origin master`, dir=tappath)
+    Git.run(`reset --hard origin/master`, dir=tappath)
 end
 
 # Update environment variables so we can natively call brew, otool, etc...
@@ -91,6 +93,10 @@ function update_env()
     if !(joinpath(brew_prefix,"lib") in DL_LOAD_PATH)
         push!(DL_LOAD_PATH, joinpath(brew_prefix, "lib") )
     end
+
+    # We need to set our own, private, cache directory so that we don't conflict with
+    # user-maintained Homebrew installations, and multiple users can use it at once
+    ENV["HOMEBREW_CACHE"] = joinpath(ENV["HOME"],"Library/Caches/Homebrew.jl/")
     return
 end
 
