@@ -54,7 +54,7 @@ function link_bundled_dylibs()
     end
 
     # Finally, make sure that fake gfortran keg is linked by `$brew`
-    run(`$brew link gfortran`)
+    run(`$brew link --force gfortran`)
 end
 
 function install_brew()
