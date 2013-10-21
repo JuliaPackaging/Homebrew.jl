@@ -65,7 +65,7 @@ function install_brew()
     if !isexecutable( brew )
         # Clone brew into brew_prefix
         Base.info("Cloning brew from $BREW_URL")
-        try Git.run(`clone $BREW_URL -b $BREW_BRANCH $brew_prefix`)
+        try Git.run(`clone $BREW_URL -b $BREW_BRANCH --depth 1 --single-branch $brew_prefix`)
         catch
             warn("Could not clone $BREW_URL/$BREW_BRANCH into $brew_prefix!")
             rethrow()
