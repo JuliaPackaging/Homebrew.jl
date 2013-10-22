@@ -41,15 +41,18 @@ function link_bundled_dylibs()
 
     # We already have these dylibs loaded; let's find them and symlink them
     for d in bundled_dylibs
-        f = filter( x->contains(x,d), shlibs)[1]
-        symlink = abspath(joinpath(gfortran_cellar,"lib",basename(f)))
-        if !isfile(symlink)
-            run(`ln -fs $f $symlink`)
-        end
+        f = filter( x->contains(x,d), shlibs)
+        if !(isempty(f))
+            f=f[1]
+            symlink = abspath(joinpath(gfortran_cellar,"lib",basename(f)))
+            if !isfile(symlink)
+                run(`ln -fs $f $symlink`)
+            end
 
-        symlink = abspath(joinpath(gfortran_cellar,"gfortran","lib",basename(f)))
-        if !isfile(symlink)
-            run(`ln -fs $f $symlink`)
+            symlink = abspath(joinpath(gfortran_cellar,"gfortran","lib",basename(f)))
+            if !isfile(symlink)
+                run(`ln -fs $f $symlink`)
+            end
         end
     end
 
