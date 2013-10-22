@@ -3,8 +3,6 @@ module Homebrew
 using Base.Git
 import Base: show
 
-include("ShlibList.jl")
-
 # Homebrew prefix
 const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
 const brew = joinpath(brew_prefix,"bin","brew")
@@ -21,40 +19,6 @@ function init()
 
     # Update environment variables such as PATH, DL_LOAD_PATH, etc...
     update_env()
-end
-
-function link_bundled_dylibs()
-    # This function links dylibs that are bundled with Julia (e.g. libgmp) into
-    # Homebrew's lib/ folder so that dependencies such as gnutls can find them
-    bundled_dylibs = ["libgmp", "libgfortran", "libquadmath", "libgcc_s"]
-
-    # Make sure our `lib` is 
-    mkpath(joinpath(brew_prefix,"lib"))
-
-    # Get the paths of all shared libraries loaded by this process
-    shlibs = shlib_list()
-
-    # Make sure gfortran cellar directories are made
-    gfortran_cellar = joinpath(brew_prefix,"Cellar","gfortran","4.8.1")
-    mkpath(joinpath(gfortran_cellar,"lib"))
-    mkpath(joinpath(gfortran_cellar,"gfortran","lib"))
-
-    # We already have these dylibs loaded; let's find them and symlink them
-    for d in bundled_dylibs
-        f = filter( x->contains(x,d), shlibs)[1]
-        symlink = abspath(joinpath(gfortran_cellar,"lib",basename(f)))
-        if !isfile(symlink)
-            run(`ln -fs $f $symlink`)
-        end
-
-        symlink = abspath(joinpath(gfortran_cellar,"gfortran","lib",basename(f)))
-        if !isfile(symlink)
-            run(`ln -fs $f $symlink`)
-        end
-    end
-
-    # Finally, make sure that fake gfortran keg is linked by `$brew`
-    run(`$brew link --force gfortran`)
 end
 
 function install_brew()
@@ -89,9 +53,6 @@ function install_brew()
             rethrow()
         end
     end
-
-    # link bundled dylibs into $brew_prefix/lib
-    link_bundled_dylibs()
 end
 
 function update()
