@@ -56,9 +56,9 @@ function install_brew()
 end
 
 function update()
-    Git.run(`fetch origin $BREW_BRANCH`, dir=brew_prefix)
+    Git.run(`fetch origin`, dir=brew_prefix)
     Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
-    Git.run(`fetch origin master`, dir=tappath)
+    Git.run(`fetch origin`, dir=tappath)
     Git.run(`reset --hard origin/master`, dir=tappath)
 end
 
