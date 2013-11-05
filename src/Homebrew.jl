@@ -60,6 +60,7 @@ function update()
     Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
     Git.run(`fetch origin`, dir=tappath)
     Git.run(`reset --hard origin/master`, dir=tappath)
+    upgrade()
 end
 
 # Update environment variables so we can natively call brew, otool, etc...
@@ -98,13 +99,31 @@ function show(io::IO, b::BrewPkg)
     write(io, "$(b.name): $(b.version)")
 end
 
-# List all installed packages as a list of (name,version) lists
+# List all installed packages as a list of BrewPkg items
 function list()
     brew_list = readchomp(`$brew list --versions`)
     if length(brew_list) != 0
         [BrewPkg(split(f)) for f in split(brew_list,"\n")]
     else
         []
+    end
+end
+
+# List all outdated packages as a list of names
+function outdated()
+    brew_outdated = readchomp(`brew outdated`)
+    if length(brew_outdated) != 0
+        split(brew_outdated,"\n")
+    else
+        []
+    end
+end
+
+function upgrade()
+    # We have to manually upgrade each package, as `brew upgrade` will pull from mxcl/master
+    for f in outdated()
+        run(`$brew rm staticfloat/juliadeps/$f`)
+        run(`$brew upgrade staticfloat/juliadeps/$f`)
     end
 end
 
