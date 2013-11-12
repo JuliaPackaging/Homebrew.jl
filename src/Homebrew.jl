@@ -123,7 +123,7 @@ function upgrade()
     # We have to manually upgrade each package, as `brew upgrade` will pull from mxcl/master
     for f in outdated()
         run(`$brew rm staticfloat/juliadeps/$f`)
-        run(`$brew upgrade staticfloat/juliadeps/$f`)
+        run(`$brew install staticfloat/juliadeps/$f`)
     end
 end
 
