@@ -1,7 +1,6 @@
 module Homebrew
 
-using Base.Git
-import Base: show
+import Base: Pkg.Git, show
 
 # Homebrew prefix
 const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
