@@ -9,7 +9,7 @@ const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps")
 
 const BREW_URL = "https://github.com/staticfloat/homebrew.git"
 const BREW_BRANCH = "kegpkg"
-const BOTTLE_SERVER = "http://s3.amazonaws.com/julialang/bin/osx/extras/"
+const BOTTLE_SERVER = "http://s3.amazonaws.com/julialang/bin/osx/extras"
 
 
 function init()
