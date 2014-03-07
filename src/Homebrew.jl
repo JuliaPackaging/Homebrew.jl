@@ -1,6 +1,11 @@
 module Homebrew
 
 import Base: Pkg.Git, show
+if VERSION >= v"0.3.0-"
+    import Base: Pkg.Git
+else
+    import Base: Git
+end
 
 # Homebrew prefix
 const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
