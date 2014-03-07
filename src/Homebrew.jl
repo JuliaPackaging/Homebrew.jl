@@ -1,6 +1,6 @@
 module Homebrew
 
-import Base: Pkg.Git, show
+import Base: show
 if VERSION >= v"0.3.0-"
     import Base: Pkg.Git
 else
