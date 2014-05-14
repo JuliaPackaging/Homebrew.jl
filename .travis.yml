@@ -14,8 +14,11 @@ before_install:
     - if [[ "$JULIAVERSION" == "releases" ]]; then wget -O julia.dmg http://status.julialang.org/download/osx10.7+; fi
     - if [[ "$JULIAVERSION" == "nightlies" ]]; then wget -O julia.dmg http://status.julialang.org/download/osx10.7+; fi
     - hdiutil mount julia.dmg
-    - cp -Ra /Volumes/Julia/*.app/Contents/Resources/julia ~
+    - cp -Ra /Volumes/Julia/*.app/Contents/Resources/julia/ ~
     - export PATH="$PATH:$(echo ~)/bin"
+    - which julia
+    - ls ~/bin
+    - ls ~/lib/julia
 script:
     - julia -e 'println(GIT_VERSION_INFO.commit)'
 after_success:
