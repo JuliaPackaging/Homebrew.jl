@@ -16,10 +16,9 @@ before_install:
     - hdiutil mount julia.dmg
     - cp -Ra /Volumes/Julia/*.app/Contents/Resources/julia/ ~
     - export PATH="$PATH:$(echo ~)/bin"
-    - which julia
-    - ls ~/bin
-    - ls ~/lib/julia
+    - echo "$PATH"
 script:
-    - julia -e 'println(GIT_VERSION_INFO.commit)'
+    - julia -e 'versioninfo(); Pkg.init(); Pkg.clone(pwd())'
+    - julia test/tests.jl
 after_success:
     - julia -e 'cd(Pkg.dir("Homebrew")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
