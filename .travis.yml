@@ -11,7 +11,8 @@ env:
         - JULIAVERSION="nightlies"
 before_install:
     - uname -a
-    - [[ "$JULIAVERSION" == "nightlies" ]] && wget -O julia.dmg http://status.julialang.org/download/osx10.7+
+    - [[ "$JULIAVERSION" == "releases" ]]; then wget -O julia.dmg http://status.julialang.org/download/osx10.7+; fi
+    - [[ "$JULIAVERSION" == "nightlies" ]]; then wget -O julia.dmg http://status.julialang.org/download/osx10.7+; fi
     - hdiutil mount julia.dmg
     - cp -Ra /Volumes/Julia/*.app/Contents/Resources/julia ~
     - export PATH="$PATH:$(echo ~)/bin"
