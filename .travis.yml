@@ -1,0 +1,13 @@
+language: cpp
+os:
+    - osx
+compiler:
+    - gcc
+notifications:
+    email: false
+before_install:
+    - echo "before_install!"
+script:
+    - uname -a
+after_success:
+    julia -e 'cd(Pkg.dir("Homebrew")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'

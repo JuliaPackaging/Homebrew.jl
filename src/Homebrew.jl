@@ -137,34 +137,25 @@ function info(pkg)
 end
 
 # Install a package
-function add(pkg, version=nothing, git_hash=nothing)
+function add(pkg)
     # First, check to make sure we don't already have this version installed
     installed_packages = list()
-    if( version != nothing )
-        # If they explicitly ask for a version, let's make sure we don't already have it
-        if installed(pkg, version)
-            return
-        end
-    else
-        latest_version = split(info(pkg))[3]
-
-        # If they implicitly ask for the latest, also makre sure we don't already have it
-        if installed( pkg, latest_version )
-            return
-        end
+    if installed( pkg )
+        return
     end
 
     cd(tappath) do
-        # If we request a specific version, we'll need to checkout the given git hash
-        if version != nothing && git_hash != nothing
-            run(`git checkout $git_hash $pkg.rb`)
-        end
+        # First, unlink any previous versions of this package
         if linked( pkg )
             run(`$brew unlink --quiet $pkg`)
         end
-        run(`$brew install staticfloat/juliadeps/$pkg`)
-        if git_hash != nothing
-            run(`git checkout HEAD $pkg.rb`)
+        # If we've got it in our tap, install it
+        if isfile( "$pkg.rb" )
+            println("It's in the tap!")
+            run(`$brew install --force-bottle staticfloat/juliadeps/$pkg`)
+        else
+            # If not, try to install it from Homebrew
+            run(`$brew install --force-bottle $pkg`)
         end
     end
 end
