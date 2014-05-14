@@ -5,9 +5,17 @@ compiler:
     - gcc
 notifications:
     email: false
+env:
+    matrix:
+        - JULIAVERSION="releases"
+        - JULIAVERSION="nightlies"
 before_install:
-    - echo "before_install!"
-script:
     - uname -a
+    - [[ "$JULIAVERSION" == "nightlies" ]] && wget -O julia.dmg http://status.julialang.org/download/osx10.7+
+    - hdiutil mount julia.dmg
+    - cp -Ra /Volumes/Julia/*.app/Contents/Resources/julia ~
+    - export PATH="$PATH:$(echo ~)/bin"
+script:
+    - julia -e 'println(GIT_VERSION_INFO.commit)'
 after_success:
-    julia -e 'cd(Pkg.dir("Homebrew")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+    - julia -e 'cd(Pkg.dir("Homebrew")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
