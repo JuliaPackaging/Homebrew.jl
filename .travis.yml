@@ -10,7 +10,7 @@ env:
         - JULIAVERSION="releases"
         - JULIAVERSION="nightlies"
 before_install:
-    - ./CI/install_julia_osx.sh
+    - source ./CI/install_julia_osx.sh
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
     - julia -e 'versioninfo(); Pkg.init(); Pkg.clone(pwd())'
