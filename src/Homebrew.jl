@@ -115,7 +115,7 @@ end
 
 # List all outdated packages as a list of names
 function outdated()
-    brew_outdated = readchomp(`brew outdated`)
+    brew_outdated = readchomp(`$brew outdated`)
     if length(brew_outdated) != 0
         split(brew_outdated,"\n")
     else
