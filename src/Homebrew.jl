@@ -10,11 +10,11 @@ end
 # Homebrew prefix
 const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
 const brew = joinpath(brew_prefix,"bin","brew")
-const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps")
+const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebrew-juliadeps")
 
-const BREW_URL = "https://github.com/staticfloat/homebrew.git"
-const BREW_BRANCH = "kegpkg"
-const BOTTLE_SERVER = "http://s3.amazonaws.com/julialang/bin/osx/extras"
+const BREW_URL = "https://github.com/Homebrew/homebrew.git"
+const BREW_BRANCH = "master"
+const BOTTLE_SERVER = "https://juliabottles.s3.amazonaws.com"
 
 
 function init()
@@ -39,6 +39,8 @@ function install_brew()
             rethrow()
         end
     end
+
+
 
     if !isexecutable(joinpath(brew_prefix,"bin","otool"))
         # Download/install packaged install_name_tools
@@ -95,6 +97,7 @@ function prefix()
     brew_prefix
 end
 
+# Get the prefix of a given package
 function prefix(pkg)
     split(split(info(pkg),"\n")[3])[1]
 end
@@ -133,7 +136,13 @@ end
 
 # Print out info for a specific package
 function info(pkg)
-    readchomp(`$brew info staticfloat/juliadeps/$pkg`)
+    cd(tappath) do
+        if isfile( "$pkg.rb" )
+            println(readchomp(`$brew info staticfloat/juliadeps/$pkg`))
+        else
+            println(readchomp(`$brew info $pkg`))
+        end
+    end
 end
 
 # Install a package
@@ -151,7 +160,6 @@ function add(pkg)
         end
         # If we've got it in our tap, install it
         if isfile( "$pkg.rb" )
-            println("It's in the tap!")
             run(`$brew install --force-bottle staticfloat/juliadeps/$pkg`)
         else
             # If not, try to install it from Homebrew
@@ -160,9 +168,6 @@ function add(pkg)
     end
 end
 
-function search(pkg)
-    isfile(joinpath(tappath,"$(pkg).rb"))
-end
 
 function installed(pkg, version = nothing)
     installed_packages = list()
