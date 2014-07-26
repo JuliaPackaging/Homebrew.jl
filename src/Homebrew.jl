@@ -40,6 +40,12 @@ function install_brew()
         end
     end
 
+    # Make sure we're on the right repo
+    if Git.readchomp(`config remote.origin.url`, dir=brew_prefix) != BREW_URL
+        Git.run(`config remote.origin.url $BREW_URL`, dir=brew_prefix)
+        Git.run(`fetch origin`, dir=brew_prefix)
+        Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
+    end
 
 
     if !isexecutable(joinpath(brew_prefix,"bin","otool"))
