@@ -20,7 +20,16 @@ function package_available(p::HB)
 	if isa(pkgs,String)
 		pkgs = [pkgs]
 	end
-	return all(x -> search(x), pkgs)
+
+	# For each package, see if we can get info about it.  If not, fail out
+	for pkg in pkgs
+		try
+			info(pkg)
+		catch
+			return false
+		end
+	end
+	return true
 end
 
 libdir(p::HB, dep) = joinpath(brew_prefix, "lib")
