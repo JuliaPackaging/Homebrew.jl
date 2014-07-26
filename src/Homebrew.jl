@@ -43,7 +43,7 @@ function install_brew()
     # Make sure we're on the right repo
     if Git.readchomp(`config remote.origin.url`, dir=brew_prefix) != BREW_URL
         Git.run(`config remote.origin.url $BREW_URL`, dir=brew_prefix)
-        Git.run(`fetch origin`, dir=brew_prefix)
+        Git.run(`fetch origin/$BREW_BRANCH`, dir=brew_prefix)
         Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
     end
 
@@ -59,7 +59,7 @@ function install_brew()
 
     if !isdir(tappath)
         # Tap staticfloat/juliadeps
-        try run(`$(joinpath(brew_prefix, "bin", "brew")) tap staticfloat/juliadeps --quiet`)
+        try run(`$brew tap staticfloat/juliadeps --quiet`)
         catch
             warn( "Could not tap staticfloat/juliadeps!" )
             rethrow()
