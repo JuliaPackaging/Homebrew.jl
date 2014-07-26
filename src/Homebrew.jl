@@ -47,6 +47,11 @@ function install_brew()
         Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
     end
 
+    # Remove old tappath if it exists
+    if isdir(joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps"))
+        run(`$brew untap staticfloat/juliadeps`)
+    end
+
 
     if !isexecutable(joinpath(brew_prefix,"bin","otool"))
         # Download/install packaged install_name_tools
