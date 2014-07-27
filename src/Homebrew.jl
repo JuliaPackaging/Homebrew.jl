@@ -233,6 +233,29 @@ function info(pkg)
             # First, get name and version
             name = obj["name"]
             version = obj["versions"]["stable"]
+
+            # Gotta filter out version!
+            try
+                version = convert(VersionNumber, version)
+            catch
+                # Most of the time this is due to weird stuff at the suffix; let's cut it off until it works!
+                failing = true
+                idx = length(version)-1
+                while failing && idx > 0
+                    try
+                        version = convert(VersionNumber, version[1:idx])
+                        failing = false
+                    end
+                    idx -= 1
+                end
+                
+                if idx == 0
+                    warn("Brew is feeding us a weird version string for $(name): $(version)")
+                    warn("Please report this at https://github.com/JuliaLang/Homebrew.jl")
+                    version = v"1.0"
+                end
+            end
+
             bottled = obj["versions"]["bottle"]
 
             # Then, return a BrewPkg!
