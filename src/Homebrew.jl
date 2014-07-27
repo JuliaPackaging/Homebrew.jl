@@ -6,6 +6,7 @@ if VERSION >= v"0.3.0-"
 else
     import Base: Git
 end
+using JSON
 
 # Homebrew prefix
 const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
@@ -25,6 +26,16 @@ function init()
     update_env()
 end
 
+# Ignore STDERR
+function quiet_run(cmd::Cmd)
+    run(cmd, (STDIN, STDOUT, DevNull), false, false)
+end
+
+# Ignore STDOUT and STDERR
+function really_quiet_run(cmd::Cmd)
+    run(cmd, (STDIN, DevNull, DevNull), false, false)
+end
+
 function install_brew()
     # Ensure brew_prefix exists
     mkpath(brew_prefix)
@@ -40,16 +51,19 @@ function install_brew()
         end
     end
 
-    # Make sure we're on the right repo
+    # Make sure we're on the right repo.  If not, clear it out!
     if Git.readchomp(`config remote.origin.url`, dir=brew_prefix) != BREW_URL
         Git.run(`config remote.origin.url $BREW_URL`, dir=brew_prefix)
-        Git.run(`fetch origin/$BREW_BRANCH`, dir=brew_prefix)
+        Git.run(`config remote.origin.fetch +refs/heads/master:refs/remotes/origin/master`, dir=brew_prefix)
+        Git.run(`fetch --depth=1 origin`, dir=brew_prefix)
         Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
     end
 
     # Remove old tappath if it exists
-    if isdir(joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps"))
-        run(`$brew untap staticfloat/juliadeps`)
+    old_tappath = joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps")
+    if isdir(old_tappath)
+        Base.rm(old_tappath, recursive=true)
+        run(`$brew prune`)
     end
 
 
@@ -64,7 +78,8 @@ function install_brew()
 
     if !isdir(tappath)
         # Tap staticfloat/juliadeps
-        try run(`$brew tap staticfloat/juliadeps --quiet`)
+        try
+            quiet_run(`$brew tap staticfloat/juliadeps`)
         catch
             warn( "Could not tap staticfloat/juliadeps!" )
             rethrow()
@@ -73,7 +88,7 @@ function install_brew()
 end
 
 function update()
-    Git.run(`fetch origin`, dir=brew_prefix)
+    Git.run(`fetch --depth=1 origin`, dir=brew_prefix)
     Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
     Git.run(`fetch origin`, dir=tappath)
     Git.run(`reset --hard origin/master`, dir=tappath)
@@ -98,32 +113,51 @@ end
 
 immutable BrewPkg
     name::ASCIIString
-    version::ASCIIString
+    version::VersionNumber
+    bottled::Bool
+    cellar::ASCIIString
 
-    BrewPkg(n, v) = new(n,v)
-    BrewPkg(a::Array) = new(a[1], a[2])
+    BrewPkg(n, v, b) = new(n, v, b)
+end
+
+function show(io::IO, b::BrewPkg)
+    write(io, "$(b.name): $(b.version) $(b.bottled ? "(bottled)" : "")")
 end
 
 function prefix()
     brew_prefix
 end
 
-# Get the prefix of a given package
-function prefix(pkg)
-    split(split(info(pkg),"\n")[3])[1]
+# Get the prefix of a given package (if it's installed)
+function prefix(name::String)
+    cellar_path = joinpath(brew_prefix, "Cellar", name)
+    versions = readdir(cellar_path)
+    if length(versions) == 0
+        throw(ArgumentError("Formula $(name) is not installed, can't get prefix!"))
+    end
+
+    versions = [VersionNumber(v) for v in versions]
+    return joinpath(brew_prefix, "Cellar", name, max(versions))
 end
 
-function show(io::IO, b::BrewPkg)
-    write(io, "$(b.name): $(b.version)")
+# If we pass in a BrewPkg, just sub out to running it on the name
+function prefix(pkg::BrewPkg)
+    prefix(pkg.name)
 end
 
 # List all installed packages as a list of BrewPkg items
 function list()
     brew_list = readchomp(`$brew list --versions`)
     if length(brew_list) != 0
-        [BrewPkg(split(f)) for f in split(brew_list,"\n")]
+        pkgs = BrewPkg[]
+        for f in split(brew_list,"\n")
+            name = split(f, " ")[1]
+            vers = split(f, " ")[1]
+            push!(pkgs, BrewPkg(f[1], f[2], false))
+        end
+        return pkgs
     else
-        []
+        BrewPkg[]
     end
 end
 
@@ -131,38 +165,58 @@ end
 function outdated()
     brew_outdated = readchomp(`$brew outdated`)
     if length(brew_outdated) != 0
-        split(brew_outdated,"\n")
+        BrewPkg[info(f) for f in split(brew_outdated,"\n")]
     else
-        []
+        BrewPkg[]
     end
 end
 
 function upgrade()
     # We have to manually upgrade each package, as `brew upgrade` will pull from mxcl/master
-    for f in outdated()
-        run(`$brew rm staticfloat/juliadeps/$f`)
-        run(`$brew install staticfloat/juliadeps/$f`)
+    for pkg in outdated()
+        rm(pkg)
+        add(pkg)
     end
 end
 
-# Print out info for a specific package
+# Get info for a specific package
 function info(pkg)
+    json_str = ""
     cd(tappath) do
-        if isfile( "$pkg.rb" )
-            println(readchomp(`$brew info staticfloat/juliadeps/$pkg`))
-        else
-            println(readchomp(`$brew info $pkg`))
+        try
+            if isfile( "$pkg.rb" )
+                json_str = readchomp(`$brew info --json=v1 staticfloat/juliadeps/$pkg`)
+            else
+                json_str = readchomp(`$brew info --json=v1 $pkg`)
+            end
+        catch
+            throw(ArgumentError("Cannot find formula for $(pkg)!"))
         end
+    end
+
+    if length(json_str) != 0
+        obj = JSON.parse(json_str)
+
+        if length(obj) != 0
+            obj = obj[1]
+            # First, get name and version
+            name = obj["name"]
+            version = obj["versions"]["stable"]
+            bottled = obj["versions"]["bottle"]
+
+            # Then, return a BrewPkg!
+            return BrewPkg(name, version, bottled)
+        else
+            throw(ArgumentError("Cannot parse info for $(pkg)!"))
+        end
+    else
+        throw(ArgumentError("brew didn't give us any info for $(pkg)!"))
     end
 end
 
 # Install a package
-function add(pkg)
+function add(pkg::String)
     # First, check to make sure we don't already have this version installed
-    installed_packages = list()
-    if installed( pkg )
-        return
-    end
 
     cd(tappath) do
         # First, unlink any previous versions of this package
@@ -176,24 +230,34 @@ function add(pkg)
             # If not, try to install it from Homebrew
             run(`$brew install --force-bottle $pkg`)
         end
+
+        # Finally, if we need to, link it in
+        quiet_run(`$brew link $pkg`)
     end
 end
 
-
-function installed(pkg, version = nothing)
-    installed_packages = list()
-    if version != nothing
-        any([p.name == pkg && p.version == version for p in list()])
-    else
-        isdir(joinpath(brew_prefix,"Cellar",pkg))
-    end
+function add(pkg::BrewPkg)
+    add(pkg.name)
 end
 
-function linked(pkg)
+
+function installed(pkg::String)
+    isdir(joinpath(brew_prefix,"Cellar",pkg))
+end
+
+function installed(pkg::BrewPkg)
+    installed(pkg.name)
+end
+
+function linked(pkg::String)
     return islink(joinpath(brew_prefix,"Library","LinkedKegs",pkg))
 end
 
-function rm(pkg)
+function linked(pkg::BrewPkg)
+    return linked(pkg.name)
+end
+
+function rm(pkg::String)
     run(`$brew rm --force $pkg`)
 end
 
