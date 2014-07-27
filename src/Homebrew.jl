@@ -216,7 +216,6 @@ end
 
 # Install a package
 function add(pkg::String)
-    println("add($(pkg))")
     # First, check to make sure we don't already have this version installed
 
     cd(tappath) do
@@ -259,7 +258,6 @@ function linked(pkg::BrewPkg)
 end
 
 function rm(pkg::String)
-    println("rm($(pkg))")
     run(`$brew rm --force $pkg`)
 end
 
