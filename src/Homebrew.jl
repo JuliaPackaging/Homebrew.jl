@@ -152,8 +152,14 @@ function list()
         pkgs = BrewPkg[]
         for f in split(brew_list,"\n")
             name = split(f, " ")[1]
-            vers = split(f, " ")[1]
-            push!(pkgs, BrewPkg(f[1], f[2], false))
+            vers = split(f, " ")[2]
+
+            # Get rid of revisions from version numbers
+            _idx = search(vers,'_')
+            if _idx > 0
+                vers = vers[1:_idx-1]
+            end
+            push!(pkgs, BrewPkg(name, vers, false))
         end
         return pkgs
     else
@@ -161,14 +167,39 @@ function list()
     end
 end
 
-# List all outdated packages as a list of names
-function outdated()
-    brew_outdated = readchomp(`$brew outdated`)
-    if length(brew_outdated) != 0
-        BrewPkg[info(f) for f in split(brew_outdated,"\n")]
-    else
-        BrewPkg[]
+function find(name::ASCIIString, pkgs::Vector{BrewPkg})
+    for p in pkgs
+        if p.name == name
+            return p
+        end
     end
+    return nothing
+end
+
+# List all outdated packages as a list of BrewPkg's
+function outdated()
+    outdated_pkgs = BrewPkg[]
+    brew_outdated = readchomp(`$brew outdated`)
+    if length(brew_outdated) == 0
+        return outdated_pkgs
+    end
+
+    installed_packages = list()
+
+    # For each package that brew outdated gives us
+    for f in split(brew_outdated,"\n")
+        # Get information about it
+        pkg = info(f)
+
+        # Check it against each package we have installed
+        inst_pkg = find(pkg.name, installed_packages)
+
+        # If this package isn't installed, or is and is actually a lower version
+        if inst_pkg == nothing || (inst_pkg.version < pkg.version)
+            push!(outdated_pkgs, pkg)
+        end
+    end
+    return outdated_pkgs
 end
 
 function upgrade()
