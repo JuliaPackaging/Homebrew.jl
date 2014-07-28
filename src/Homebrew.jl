@@ -55,7 +55,7 @@ function install_brew()
     if Git.readchomp(`config remote.origin.url`, dir=brew_prefix) != BREW_URL
         Git.run(`config remote.origin.url $BREW_URL`, dir=brew_prefix)
         Git.run(`config remote.origin.fetch +refs/heads/master:refs/remotes/origin/master`, dir=brew_prefix)
-        Git.run(`fetch --depth=1 origin`, dir=brew_prefix)
+        Git.run(`fetch origin`, dir=brew_prefix)
         Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
     end
 
@@ -88,7 +88,7 @@ function install_brew()
 end
 
 function update()
-    Git.run(`fetch --depth=1 origin`, dir=brew_prefix)
+    Git.run(`fetch origin`, dir=brew_prefix)
     Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
     Git.run(`fetch origin`, dir=tappath)
     Git.run(`reset --hard origin/master`, dir=tappath)
@@ -145,6 +145,44 @@ function prefix(pkg::BrewPkg)
     prefix(pkg.name)
 end
 
+# Convert brew's much more lax versioning into something that we can handle
+function make_version(name::String, vers_str::String)
+    # Most of the time we fail due to weird stuff at the end; let's cut it off until it works!
+    failing = true
+    vers = nothing
+    idx = length(vers_str)
+    while failing && idx > 0
+        try
+            vers = convert(VersionNumber, vers_str[1:idx])
+            failing = false
+        catch
+            idx -= 1
+        end
+    end
+
+    if idx != 0
+        # If there's some that we chopped off, see how much we can restore via +
+        if idx < length(vers_str) 
+            idx_add = idx+2
+            passing = true
+            while passing && idx_add <= length(vers_str)
+                try
+                    vers = convert(VersionNumber, "$(vers_str[1:idx])+$(vers_str[idx+2:idx_add])")
+                    idx_add += 1
+                catch
+                    passing = false
+                end
+            end
+        end
+    else
+        warn("Brew is feeding us a weird version string for $(name): $(vers_str)")
+        warn("Please report this at https://github.com/JuliaLang/Homebrew.jl")
+        vers = v"1.0"
+    end
+    
+    return vers
+end
+
 # List all installed packages as a list of BrewPkg items
 function list()
     brew_list = readchomp(`$brew list --versions`)
@@ -152,13 +190,7 @@ function list()
         pkgs = BrewPkg[]
         for f in split(brew_list,"\n")
             name = split(f, " ")[1]
-            vers = split(f, " ")[2]
-
-            # Get rid of revisions from version numbers
-            _idx = search(vers,'_')
-            if _idx > 0
-                vers = vers[1:_idx-1]
-            end
+            vers = make_version(name, split(f, " ")[2])
             push!(pkgs, BrewPkg(name, vers, false))
         end
         return pkgs
@@ -232,31 +264,8 @@ function info(pkg)
             obj = obj[1]
             # First, get name and version
             name = obj["name"]
-            version = obj["versions"]["stable"]
-
-            # Gotta filter out version!
-            try
-                version = convert(VersionNumber, version)
-            catch
-                # Most of the time this is due to weird stuff at the suffix; let's cut it off until it works!
-                failing = true
-                idx = length(version)-1
-                while failing && idx > 0
-                    try
-                        version = convert(VersionNumber, version[1:idx])
-                        failing = false
-                    end
-                    idx -= 1
-                end
-                
-                if idx == 0
-                    warn("Brew is feeding us a weird version string for $(name): $(version)")
-                    warn("Please report this at https://github.com/JuliaLang/Homebrew.jl")
-                    version = v"1.0"
-                end
-            end
-
-            bottled = obj["versions"]["bottle"]
+            version = make_version(name, obj["installed"][1]["version"])
+            bottled = obj["installed"][1]["poured_from_bottle"]
 
             # Then, return a BrewPkg!
             return BrewPkg(name, version, bottled)
