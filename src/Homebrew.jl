@@ -264,8 +264,13 @@ function info(pkg)
             obj = obj[1]
             # First, get name and version
             name = obj["name"]
-            version = make_version(name, obj["installed"][1]["version"])
-            bottled = obj["installed"][1]["poured_from_bottle"]
+            version = make_version(name, obj["versions"]["stable"])
+            bottled = obj["versions"]["bottle"]
+
+            # If we actually have a keg, return whether it was poured
+            if !isempty(obj["installed"])
+                bottled = obj["installed"][1]["poured_from_bottle"]
+            end
 
             # Then, return a BrewPkg!
             return BrewPkg(name, version, bottled)
