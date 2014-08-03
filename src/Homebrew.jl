@@ -62,14 +62,19 @@ function install_brew()
     # Remove old tappath if it exists
     old_tappath = joinpath(brew_prefix,"Library","Taps","staticfloat-juliadeps")
     if isdir(old_tappath)
-        Base.rm(old_tappath, recursive=true)
-        run(`$brew prune`)
+        if VERSION >= v"0.3.0-rc1"
+            Base.rm(old_tappath, recursive=true)
+        else
+            run(`rm -rf $(old_tappath)`)
+        end
+        quiet_run(`$brew prune`)
     end
 
 
     if !isexecutable(joinpath(brew_prefix,"bin","otool"))
         # Download/install packaged install_name_tools
-        try run(`curl --location $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
+        try
+            run(`curl --location $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
         catch
             warn("Could not download/extract $BOTTLE_SERVER/cctools_bundle.tar.gz into $(joinpath(brew_prefix,"bin"))!")
             rethrow()
