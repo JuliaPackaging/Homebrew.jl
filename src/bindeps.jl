@@ -7,7 +7,8 @@ type HB <: PackageManager
     packages
 end
 
-show(io::IO, hb::HB) = write(io, "Homebrew Bottles")
+show(io::IO, hb::HB) = write(io, "Homebrew Bottles ",
+    join(isa(hb.packages,String) ? [hb.packages] : hb.packages,", "))
 
 
 
