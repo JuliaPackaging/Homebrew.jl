@@ -141,8 +141,8 @@ function prefix(name::String)
         throw(ArgumentError("Formula $(name) is not installed, can't get prefix!"))
     end
 
-    versions = [VersionNumber(v) for v in versions]
-    return joinpath(brew_prefix, "Cellar", name, max(versions))
+    versions = [convert(VersionNumber,v) for v in versions]
+    return joinpath(brew_prefix, "Cellar", name, string(maximum(versions)))
 end
 
 # If we pass in a BrewPkg, just sub out to running it on the name
