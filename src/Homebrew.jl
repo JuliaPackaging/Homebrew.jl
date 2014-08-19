@@ -133,16 +133,11 @@ function prefix()
     brew_prefix
 end
 
-# Get the prefix of a given package (if it's installed)
+# Get the prefix of a given package's latest version
 function prefix(name::String)
     cellar_path = joinpath(brew_prefix, "Cellar", name)
-    versions = readdir(cellar_path)
-    if length(versions) == 0
-        throw(ArgumentError("Formula $(name) is not installed, can't get prefix!"))
-    end
-
-    versions = [convert(VersionNumber,v) for v in versions]
-    return joinpath(brew_prefix, "Cellar", name, string(maximum(versions)))
+    version = info(name).version
+    return joinpath(brew_prefix, "Cellar", name, string(version))
 end
 
 # If we pass in a BrewPkg, just sub out to running it on the name
