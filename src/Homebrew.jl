@@ -175,9 +175,14 @@ function make_version(name::String, vers_str::String)
             end
         end
     else
-        warn("Brew is feeding us a weird version string for $(name): $(vers_str)")
-        warn("Please report this at https://github.com/JuliaLang/Homebrew.jl")
-        vers = v"1.0"
+        # Special-case things we know how to deal with here
+        if name == "x264"
+            vers = convert(VersionNumber, vers_str[2:end])
+        else
+            warn("Brew is feeding us a weird version string for $(name): $(vers_str)")
+            warn("Please report this at https://github.com/JuliaLang/Homebrew.jl")
+            vers = v"1.0"
+        end
     end
     
     return vers
