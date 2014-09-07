@@ -13,7 +13,7 @@ As a user, you ideally shouldn't ever have to use Homebrew directly, short of in
 * `Homebrew.add("pkg")` will install `pkg`
 * `Homebrew.rm("pkg")` will uninstall `pkg`
 * `Homebrew.update()` will update the available formulae for installation and upgrade installed packages if a newer version is available
-* `Homebrew.list("pkg")` will list all installed packaages and versions
+* `Homebrew.list()` will list all installed packages and versions
 * `Homebrew.installed("pkg")` will return a boolean denoting whether or not `pkg` is installed
 * `Homebrew.prefix()` will return the prefix that all packages are installed to
 
@@ -23,7 +23,7 @@ Usage (Package Authors)
 
 As a package author, the first thing to do is to [write](https://github.com/mxcl/homebrew/wiki/Formula-Cookbook)/[find](https://github.com/mxcl/homebrew/tree/master/Library/Formula) a homebrew formula for whatever package you wish to create.  Once you have verified that is working, (and it works with your Julia package) open an issue here for your formula to be included in the library of formulae provided by `Homebrew.jl`.  To see examples of formulae that are already accepted, peruse the [homebrew-juliadeps](https://github.com/staticfloat/homebrew-juliadeps) repository.
 
-To have your julia package automatically install these precompiled binaries, `Homebrew.jl` offers a BinDeps provider which can be accessed as `Homebrew.HB`.  Simply declare your dependency on `Homebrew.jl` via a `@osx Homebrew` in your REQUIRES files, create a BinDeps `library_dependency` and state that `Homebrew` provides that dependency:
+To have your Julia package automatically install these precompiled binaries, `Homebrew.jl` offers a BinDeps provider which can be accessed as `Homebrew.HB`.  Simply declare your dependency on `Homebrew.jl` via a `@osx Homebrew` in your REQUIRE files, create a BinDeps `library_dependency` and state that `Homebrew` provides that dependency:
 
 ```julia
 using BinDeps
