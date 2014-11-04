@@ -7,6 +7,7 @@ else
     import Base: Git
 end
 using JSON
+using Compat
 
 # Homebrew prefix
 const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
@@ -134,7 +135,7 @@ function prefix()
 end
 
 # Get the prefix of a given package's latest version
-function prefix(name::String)
+function prefix(name::AbstractString)
     cellar_path = joinpath(brew_prefix, "Cellar", name)
     version = info(name).version
     return joinpath(brew_prefix, "Cellar", name, string(version))
@@ -146,7 +147,7 @@ function prefix(pkg::BrewPkg)
 end
 
 # Convert brew's much more lax versioning into something that we can handle
-function make_version(name::String, vers_str::String)
+function make_version(name::AbstractString, vers_str::AbstractString)
     # Most of the time we fail due to weird stuff at the end; let's cut it off until it works!
     failing = true
     vers = nothing
@@ -288,7 +289,7 @@ function info(pkg)
 end
 
 # Install a package
-function add(pkg::String)
+function add(pkg::AbstractString)
     # First, check to make sure we don't already have this version installed
 
     cd(tappath) do
@@ -314,7 +315,7 @@ function add(pkg::BrewPkg)
 end
 
 
-function installed(pkg::String)
+function installed(pkg::AbstractString)
     isdir(joinpath(brew_prefix,"Cellar",pkg))
 end
 
@@ -322,7 +323,7 @@ function installed(pkg::BrewPkg)
     installed(pkg.name)
 end
 
-function linked(pkg::String)
+function linked(pkg::AbstractString)
     return islink(joinpath(brew_prefix,"Library","LinkedKegs",pkg))
 end
 
@@ -330,7 +331,7 @@ function linked(pkg::BrewPkg)
     return linked(pkg.name)
 end
 
-function rm(pkg::String)
+function rm(pkg::AbstractString)
     run(`$brew rm --force $pkg`)
 end
 

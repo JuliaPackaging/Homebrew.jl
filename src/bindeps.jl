@@ -8,7 +8,7 @@ type HB <: PackageManager
 end
 
 show(io::IO, hb::HB) = write(io, "Homebrew Bottles ",
-    join(isa(hb.packages,String) ? [hb.packages] : hb.packages,", "))
+    join(isa(hb.packages, AbstractString) ? [hb.packages] : hb.packages,", "))
 
 
 
@@ -18,7 +18,7 @@ can_use(::Type{HB}) = OS_NAME == :Darwin
 function package_available(p::HB)
     !can_use(HB) && return false
     pkgs = p.packages
-    if isa(pkgs,String)
+    if isa(pkgs, AbstractString)
         pkgs = [pkgs]
     end
 
@@ -43,7 +43,7 @@ function generate_steps(dep::LibraryDependency, p::HB, opts)
               "Please make any necessary adjustments manually (This might just be a version upgrade)")
     end
     pkgs = p.packages
-    if isa(pkgs,String)
+    if isa(pkgs, AbstractString)
         pkgs = [pkgs]
     end
     ()->install(pkgs)
