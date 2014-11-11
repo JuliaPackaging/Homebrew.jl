@@ -38,7 +38,7 @@ libdir(p::HB, dep) = joinpath(brew_prefix, "lib")
 provider(::Type{HB}, packages::Vector{ASCIIString}; opts...) = HB(packages)
 
 function generate_steps(dep::LibraryDependency, p::HB, opts)
-    if get(opts, :force_rebuild, false)
+    if !get(opts, :force_rebuild, false)
         error("Will not force Homebrew to rebuild dependency \"$(dep.name)\".\n"*
               "Please make any necessary adjustments manually (This might just be a version upgrade)")
     end
