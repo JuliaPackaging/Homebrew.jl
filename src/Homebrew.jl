@@ -120,10 +120,11 @@ end
 immutable BrewPkg
     name::ASCIIString
     version::VersionNumber
+    version_str::ASCIIString
     bottled::Bool
     cellar::ASCIIString
 
-    BrewPkg(n, v, b) = new(n, v, b)
+    BrewPkg(n, v, vs, b) = new(n, v, vs, b)
 end
 
 function show(io::IO, b::BrewPkg)
@@ -137,8 +138,8 @@ end
 # Get the prefix of a given package's latest version
 function prefix(name::AbstractString)
     cellar_path = joinpath(brew_prefix, "Cellar", name)
-    version = info(name).version
-    return joinpath(brew_prefix, "Cellar", name, string(version))
+    version_str = info(name).version_str
+    return joinpath(brew_prefix, "Cellar", name, version_str)
 end
 
 # If we pass in a BrewPkg, just sub out to running it on the name
@@ -197,7 +198,8 @@ function list()
         for f in split(brew_list,"\n")
             name = split(f, " ")[1]
             vers = make_version(name, split(f, " ")[2])
-            push!(pkgs, BrewPkg(name, vers, false))
+            vers_str = split(f, " ")[2]
+            push!(pkgs, BrewPkg(name, vers, vers_str, false))
         end
         return pkgs
     else
@@ -271,6 +273,10 @@ function info(pkg)
             # First, get name and version
             name = obj["name"]
             version = make_version(name, obj["versions"]["stable"])
+            version_str = obj["versions"]["stable"]
+            if obj["revision"] > 0
+                version_str *= "_$(obj["revision"])"
+            end
             bottled = obj["versions"]["bottle"]
 
             # If we actually have a keg, return whether it was poured
@@ -279,7 +285,7 @@ function info(pkg)
             end
 
             # Then, return a BrewPkg!
-            return BrewPkg(name, version, bottled)
+            return BrewPkg(name, version, version_str, bottled)
         else
             throw(ArgumentError("Cannot parse info for $(pkg)!"))
         end
