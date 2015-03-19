@@ -18,6 +18,8 @@ const BREW_URL = "https://github.com/Homebrew/homebrew.git"
 const BREW_BRANCH = "master"
 const BOTTLE_SERVER = "https://juliabottles.s3.amazonaws.com"
 
+const DL_LOAD_PATH = VERSION >= v"0.4.0-" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
+
 
 function init()
     # Let's see if Homebrew is installed.  If not, let's do that first!
