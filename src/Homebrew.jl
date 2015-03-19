@@ -18,7 +18,7 @@ const BREW_URL = "https://github.com/Homebrew/homebrew.git"
 const BREW_BRANCH = "master"
 const BOTTLE_SERVER = "https://juliabottles.s3.amazonaws.com"
 
-const DL_LOAD_PATH = VERSION >= v"0.4.0-" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
+const DL_LOAD_PATH = VERSION >= v"0.4.0-dev+3844" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
 
 
 function init()
@@ -166,7 +166,7 @@ function make_version(name::AbstractString, vers_str::AbstractString)
 
     if idx != 0
         # If there's some that we chopped off, see how much we can restore via +
-        if idx < length(vers_str) 
+        if idx < length(vers_str)
             idx_add = idx+2
             passing = true
             while passing && idx_add <= length(vers_str)
@@ -188,7 +188,7 @@ function make_version(name::AbstractString, vers_str::AbstractString)
             vers = v"1.0"
         end
     end
-    
+
     return vers
 end
 
