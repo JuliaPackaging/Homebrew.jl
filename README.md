@@ -6,7 +6,7 @@ Homebrew.jl sets up a [homebrew](http://brew.sh) installation inside your [Julia
 
 Package authors with dependencies that want binaries distributed in this manner should open an issue here for inclusion into the package database.
 
-NOTE: If you are using MacPorts, you must update the the ```curl``` and ```curl-ca-bundle``` packages before using Homebrew.jl, in order to avoid problems with SSL certificates. From the terminal, run:
+NOTE: If you have MacPorts installed, and are seeing issues with `git` or `curl` complaining about certificates, try to update the the ```curl``` and ```curl-ca-bundle``` packages before using Homebrew.jl. From the terminal, run:
 ```
 port selfupdate
 port upgrade curl curl-ca-bundle
