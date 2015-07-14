@@ -77,7 +77,7 @@ function install_brew()
     if !isexecutable(joinpath(brew_prefix,"bin","otool"))
         # Download/install packaged install_name_tools
         try
-            pipe(run(`curl --location $BOTTLE_SERVER/cctools_bundle.tar.gz`, `tar xz -C $(joinpath(brew_prefix,"bin"))`))
+            run(`curl --location $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
         catch
             warn("Could not download/extract $BOTTLE_SERVER/cctools_bundle.tar.gz into $(joinpath(brew_prefix,"bin"))!")
             rethrow()
