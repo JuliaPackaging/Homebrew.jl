@@ -348,7 +348,7 @@ function rm(pkg::BrewPkg)
 end
 
 # Include our own, personal bindeps integration stuff
-include("bindeps.jl")
+include("bindeps_integration.jl")
 
 init()
 end # module
