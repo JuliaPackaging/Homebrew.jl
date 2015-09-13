@@ -9,8 +9,8 @@ end
 using JSON
 using Compat
 
-# Homebrew prefix
-const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
+# Find homebrew installation prefix
+const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
 const brew = joinpath(brew_prefix,"bin","brew")
 const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebrew-juliadeps")
 
