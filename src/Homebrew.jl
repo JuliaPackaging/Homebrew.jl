@@ -314,7 +314,7 @@ function add(pkg::AbstractString)
         end
 
         # Finally, if we need to, link it in
-        quiet_run(`$brew link $pkg`)
+        quiet_run(`$brew link --force $pkg`)
     end
 end
 
