@@ -9,8 +9,8 @@ end
 using JSON
 using Compat
 
-# Homebrew prefix
-const brew_prefix = Pkg.dir("Homebrew", "deps", "usr")
+# Find homebrew installation prefix
+const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
 const brew = joinpath(brew_prefix,"bin","brew")
 const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebrew-juliadeps")
 
@@ -44,7 +44,7 @@ function install_brew()
     mkpath(brew_prefix)
 
     # Make sure brew isn't already installed
-    if !isexecutable( brew )
+    if !isfile( brew )
         # Clone brew into brew_prefix
         Base.info("Cloning brew from $BREW_URL")
         try Git.run(`clone $BREW_URL -b $BREW_BRANCH --depth 1 $brew_prefix`)
@@ -74,7 +74,7 @@ function install_brew()
     end
 
 
-    if !isexecutable(joinpath(brew_prefix,"bin","otool"))
+    if !isfile(joinpath(brew_prefix,"bin","otool"))
         # Download/install packaged install_name_tools
         try
             run(`curl --location $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
