@@ -17,7 +17,7 @@ Usage (Users)
 
 As a user, you ideally shouldn't ever have to use Homebrew directly, short of installing it.  However, in an effort to be realistic, there is a simple to use interface for interacting with the Homebrew package manager:
 
-* `Homebrew.add("pkg")` will install `pkg`
+* `Homebrew.add("pkg")` will install `pkg`, note that if you want to install a package from a non-default tap, you can do so via `Homebrew.add("user/tap/formula")`.  An example of this is installing the `metis4` formula from the [`Homebrew/science` tap](https://github.com/Homebrew/homebrew-science) via `Homebrew.add("homebrew/science/metis4")`.
 * `Homebrew.rm("pkg")` will uninstall `pkg`
 * `Homebrew.update()` will update the available formulae for installation and upgrade installed packages if a newer version is available
 * `Homebrew.list()` will list all installed packages and versions
