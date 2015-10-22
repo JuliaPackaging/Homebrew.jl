@@ -20,6 +20,7 @@ const BOTTLE_SERVER = "https://juliabottles.s3.amazonaws.com"
 
 const DL_LOAD_PATH = VERSION >= v"0.4.0-dev+3844" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
 
+const use_pipeline = isdefined(Base, :pipeline)
 
 function init()
     # Let's see if Homebrew is installed.  If not, let's do that first!
@@ -31,12 +32,20 @@ end
 
 # Ignore STDERR
 function quiet_run(cmd::Cmd)
-    run(cmd, (STDIN, STDOUT, DevNull), false, false)
+    if use_pipeline
+        run(pipeline(cmd, stderr=DevNull))
+    else
+        run(cmd, (STDIN, STDOUT, DevNull), false, false)
+    end
 end
 
 # Ignore STDOUT and STDERR
 function really_quiet_run(cmd::Cmd)
-    run(cmd, (STDIN, DevNull, DevNull), false, false)
+    if use_pipeline
+        run(pipeline(cmd, stdout=DevNull, stderr=DevNull))
+    else
+        run(cmd, (STDIN, DevNull, DevNull), false, false)
+    end
 end
 
 function install_brew()
@@ -77,7 +86,11 @@ function install_brew()
     if !isfile(joinpath(brew_prefix,"bin","otool"))
         # Download/install packaged install_name_tools
         try
-            run(`curl --location $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
+            if use_pipeline
+                run(pipeline(`curl --location $BOTTLE_SERVER/cctools_bundle.tar.gz`, `tar xz -C $(joinpath(brew_prefix,"bin"))`))
+            else
+                run(`curl --location $BOTTLE_SERVER/cctools_bundle.tar.gz` |> `tar xz -C $(joinpath(brew_prefix,"bin"))`)
+            end
         catch
             warn("Could not download/extract $BOTTLE_SERVER/cctools_bundle.tar.gz into $(joinpath(brew_prefix,"bin"))!")
             rethrow()
