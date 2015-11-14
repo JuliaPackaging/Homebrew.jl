@@ -1,6 +1,9 @@
 using Homebrew
 using Base.Test
 
+# Print some debugging info
+println("Using Homebrew.jl installed to $(Homebrew.prefix())")
+
 # Restore pkg-config to its installed (or non-installed) state at the end of all of this
 pkg_was_installed = Homebrew.installed("pkg-config")
 
@@ -13,8 +16,12 @@ Homebrew.add("pkg-config")
 @test Homebrew.installed("pkg-config") == true
 
 # Now show that we have it
-run(`pkg-config --version`)
 pkgconfig = Homebrew.info("pkg-config")
+version_str = readchomp(`pkg-config --version`)
+@test version_str == pkgconfig.version_str[1:length(version_str)]
+@test Homebrew.installed(pkgconfig) == true
+display(pkgconfig)
+println(" installed to: $(Homebrew.prefix(pkgconfig))")
 
 # Run through some of the Homebrew API, both with strings and with BrewPkg objects
 @test length(filter(x -> x.name == "pkg-config", Homebrew.list())) > 0
