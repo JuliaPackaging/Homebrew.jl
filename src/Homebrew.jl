@@ -278,18 +278,31 @@ function upgrade()
 end
 
 # Get info for a specific package
-function info(pkg)
+function info(pkg::AbstractString)
     json_str = ""
+
+    # Auto-detect whether we should add staticfloat/juliadeps/ to the front of this pkg
     cd(tappath) do
-        try
-            if isfile( "$pkg.rb" )
-                json_str = brewchomp(`info --json=v1 staticfloat/juliadeps/$pkg`)
-            else
-                json_str = brewchomp(`info --json=v1 $pkg`)
-            end
-        catch
-            throw(ArgumentError("Cannot find formula for $(pkg)!"))
+        if isfile("$pkg.rb")
+            pkg = "staticfloat/juliadeps/$pkg"
         end
+    end
+
+    # Does our pkg perhaps need a tap?
+    pkgtap = dirname(pkg)
+
+    # If so, let's ensure it's tapped
+    if !isempty(pkgtap)
+        pkg_tappath = joinpath(brew_prefix,"Library","Taps",dirname(pkgtap), "homebrew-$(basename(pkgtap))")
+        if !isdir(pkg_tappath)
+            brew(`tap $pkgtap`)
+        end
+    end
+
+    try
+        json_str = brewchomp(`info --json=v1 $pkg`)
+    catch
+        throw(ArgumentError("Cannot find formula for $(pkg)!"))
     end
 
     if length(json_str) != 0
