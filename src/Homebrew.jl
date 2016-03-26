@@ -111,9 +111,22 @@ end
 function update()
     Git.run(`fetch origin`, dir=brew_prefix)
     Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
-    Git.run(`fetch origin`, dir=tappath)
-    TAP_BRANCH = Git.readchomp(`rev-parse --abbrev-ref HEAD`, dir=tappath)
-    Git.run(`reset --hard origin/$TAP_BRANCH`, dir=tappath)
+
+    # Find all namespaces inside <prefix>/Library/Taps, then search for taps
+    tapsdir = joinpath(brew_prefix,"Library","Taps")
+    namespaces = readdir(tapsdir)
+    ns_taps = [[joinpath(tapsdir, ns, tap) for tap in readdir(joinpath(tapsdir, ns))] for ns in namespaces]
+    taps = vcat(ns_taps...)
+
+    # Update each tap, one after another
+    for tap in taps
+        println("Updating tap $(basename(tap))")
+        Git.run(`fetch origin`, dir=tap)
+        TAP_BRANCH = Git.readchomp(`rev-parse --abbrev-ref HEAD`, dir=tap)
+        Git.run(`reset --hard origin/$TAP_BRANCH`, dir=tap)
+    end
+
+    # Finally, upgrade outdated packages.
     upgrade()
 end
 
