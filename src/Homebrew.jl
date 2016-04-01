@@ -1,8 +1,10 @@
 module Homebrew
 
 import Base: show
-if VERSION >= v"0.3.0-"
+if VERSION >= v"0.3.0-" && VERSION < v"0.5.0-dev+522"
     import Base: Pkg.Git
+elseif VERSION >= v"0.5.0-dev+522"
+    import Base: LibGit2
 else
     import Base: Git
 end
@@ -59,19 +61,40 @@ function install_brew()
     if !isfile( brew_exe )
         # Clone brew into brew_prefix
         Base.info("Cloning brew from $BREW_URL")
-        try Git.run(`clone $BREW_URL -b $BREW_BRANCH --depth 1 $brew_prefix`)
-        catch
-            warn("Could not clone $BREW_URL/$BREW_BRANCH into $brew_prefix!")
-            rethrow()
+        if VERSION < v"0.5.0-dev+522"
+            try Git.run(`clone $BREW_URL -b $BREW_BRANCH --depth 1 $brew_prefix`)
+            catch
+                warn("Could not clone $BREW_URL/$BREW_BRANCH into $brew_prefix!")
+                rethrow()
+            end
+        else
+            try repo = LibGit2.clone(BREW_URL, brew_prefix)
+            catch
+                warn("Could not clone $BREW_URL/$BREW_BRANCH into $brew_prefix!")
+                rethrow()
+            end
         end
     end
 
     # Make sure we're on the right repo.  If not, clear it out!
-    if Git.readchomp(`config remote.origin.url`, dir=brew_prefix) != BREW_URL
-        Git.run(`config remote.origin.url $BREW_URL`, dir=brew_prefix)
-        Git.run(`config remote.origin.fetch +refs/heads/master:refs/remotes/origin/master`, dir=brew_prefix)
-        Git.run(`fetch origin`, dir=brew_prefix)
-        Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
+    if VERSION < v"0.5.0-dev+522"
+        if Git.readchomp(`config remote.origin.url`, dir=brew_prefix) != BREW_URL
+            Git.run(`config remote.origin.url $BREW_URL`, dir=brew_prefix)
+            Git.run(`config remote.origin.fetch +refs/heads/master:refs/remotes/origin/master`, dir=brew_prefix)
+            Git.run(`fetch origin`, dir=brew_prefix)
+            Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
+        end
+    else
+        repo = LibGit2.GitRepo(brew_prefix)
+        remote = LibGit2.get(LibGit2.GitRemote, repo, "origin")
+        if LibGit2.url(remote) != BREW_URL
+            config = LibGit2.GitConfig(repo)
+            LibGit2.set!(config,"remote.origin.url",BREW_URL)
+            LibGit2.set!(config,"remote.origin.fetch","+refs/heads/master:refs/remotes/origin/master")
+            LibGit2.fetch(remote,LibGit2.fetch_refspecs(remote))
+            MASTER_BRANCH = LibG.revparse(repo, "origin/$BREW_BRANCH")
+            LibGit2.reset!(repo, MASTER_BRANCH, LibGit2.RESET_HARD)
+        end
     end
 
     # Remove old tappath if it exists
@@ -108,26 +131,47 @@ function install_brew()
     end
 end
 
-function update()
-    Git.run(`fetch origin`, dir=brew_prefix)
-    Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
+if VERSION < v"0.5.0-dev+522"
+    function update()
+        Git.run(`fetch origin`, dir=brew_prefix)
+        Git.run(`reset --hard origin/$BREW_BRANCH`, dir=brew_prefix)
 
-    # Find all namespaces inside <prefix>/Library/Taps, then search for taps
-    tapsdir = joinpath(brew_prefix,"Library","Taps")
-    namespaces = readdir(tapsdir)
-    ns_taps = [[joinpath(tapsdir, ns, tap) for tap in readdir(joinpath(tapsdir, ns))] for ns in namespaces]
-    taps = vcat(ns_taps...)
+        # Find all namespaces inside <prefix>/Library/Taps, then search for taps
+        tapsdir = joinpath(brew_prefix,"Library","Taps")
+        namespaces = readdir(tapsdir)
+        ns_taps = [[joinpath(tapsdir, ns, tap) for tap in readdir(joinpath(tapsdir, ns))] for ns in namespaces]
+        taps = vcat(ns_taps...)
 
-    # Update each tap, one after another
-    for tap in taps
-        println("Updating tap $(basename(tap))")
-        Git.run(`fetch origin`, dir=tap)
-        TAP_BRANCH = Git.readchomp(`rev-parse --abbrev-ref HEAD`, dir=tap)
-        Git.run(`reset --hard origin/$TAP_BRANCH`, dir=tap)
+        # Update each tap, one after another
+        for tap in taps
+            println("Updating tap $(basename(tap))")
+            Git.run(`fetch origin`, dir=tap)
+            TAP_BRANCH = Git.readchomp(`rev-parse --abbrev-ref HEAD`, dir=tap)
+            Git.run(`reset --hard origin/$TAP_BRANCH`, dir=tap)
+        end
+
+        # Finally, upgrade outdated packages.
+        upgrade()
     end
+else
+    function update()
+        repo = LibGit2.GitRepo(brew_prefix)
+        remote = LibGit2.get(LibGit2.GitRemote, repo, "origin")
+        
+        tapsdir = joinpath(brew_prefix,"Library","Taps")
+        namespaces = readdir(tapsdir)
+        ns_taps = [[joinpath(tapsdir, ns, tap) for tap in readdir(joinpath(tapsdir, ns))] for ns in namespaces]
+        taps = vcat(ns_taps...)
 
-    # Finally, upgrade outdated packages.
-    upgrade()
+        # Update each tap, one after another
+        for tap in taps
+            println("Updating tap $(basename(tap))")
+            LibGit2.fetch(remote,[BREW_BRANCH])
+            TAP_BRANCH = LibGit2.revparseid(repo, tappath)
+            LibGit2.reset!(repo, TAP_BRANCH, LibGit2.Consts.RESET_HARD)
+        end
+        upgrade()
+    end
 end
 
 # Update environment variables so we can natively call brew, otool, etc...
