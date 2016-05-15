@@ -9,7 +9,7 @@ else
     import Base: Git
 end
 using JSON
-using Compat
+using Compat; import Compat.String
 
 # Find homebrew installation prefix
 const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
@@ -191,11 +191,11 @@ function update_env()
 end
 
 immutable BrewPkg
-    name::ASCIIString
+    name::String
     version::VersionNumber
-    version_str::ASCIIString
+    version_str::String
     bottled::Bool
-    cellar::ASCIIString
+    cellar::String
 
     BrewPkg(n, v, vs, b) = new(n, v, vs, b)
 end
@@ -280,7 +280,7 @@ function list()
     end
 end
 
-function find(name::ASCIIString, pkgs::Vector{BrewPkg})
+function find(name::String, pkgs::Vector{BrewPkg})
     for p in pkgs
         if p.name == name
             return p
