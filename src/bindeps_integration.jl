@@ -35,7 +35,7 @@ end
 
 libdir(p::HB, dep) = joinpath(brew_prefix, "lib")
 
-provider(::Type{HB}, packages::Vector{ASCIIString}; opts...) = HB(packages)
+provider{T<:String}(::Type{HB}, packages::Vector{T}; opts...) = HB(packages)
 
 function generate_steps(dep::LibraryDependency, p::HB, opts)
     pkgs = p.packages
