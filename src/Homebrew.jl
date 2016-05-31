@@ -92,7 +92,7 @@ function install_brew()
             LibGit2.set!(config,"remote.origin.url",BREW_URL)
             LibGit2.set!(config,"remote.origin.fetch","+refs/heads/master:refs/remotes/origin/master")
             LibGit2.fetch(remote,LibGit2.fetch_refspecs(remote))
-            MASTER_BRANCH = LibG.revparse(repo, "origin/$BREW_BRANCH")
+            MASTER_BRANCH = LibGit2.revparse(repo, "origin/$BREW_BRANCH")
             LibGit2.reset!(repo, MASTER_BRANCH, LibGit2.RESET_HARD)
         end
     end
