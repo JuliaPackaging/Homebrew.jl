@@ -16,7 +16,11 @@ const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
 const brew_exe = joinpath(brew_prefix,"bin","brew")
 const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebrew-juliadeps")
 
-const BREW_URL = "https://github.com/Homebrew/homebrew.git"
+if VERSION < v"0.5.0-dev+522"
+    const BREW_URL = "https://github.com/Homebrew/homebrew.git"
+else
+    const BREW_URL = "https://github.com/Homebrew/brew.git"
+end
 const BREW_BRANCH = "master"
 const BOTTLE_SERVER = "https://juliabottles.s3.amazonaws.com"
 
