@@ -156,34 +156,6 @@ if VERSION < v"0.5.0-dev+522"
 else
     function update()
         brew(`update`)
-#=
-        repo = LibGit2.GitRepo(brew_prefix)
-        remote = LibGit2.get(LibGit2.GitRemote, repo, "origin")
-#        LibGit2.fetch(remote,[BREW_BRANCH])
-#        TAP_BRANCH = LibGit2.revparseid(repo, tappath)
-#        LibGit2.reset!(repo, TAP_BRANCH, LibGit2.Consts.RESET_HARD)
-        
-        tapsdir = joinpath(brew_prefix,"Library","Taps")
-        namespaces = readdir(tapsdir)
-        ns_taps = [[joinpath(tapsdir, ns, tap) for tap in readdir(joinpath(tapsdir, ns))] for ns in namespaces]
-        taps = vcat(ns_taps...)
-
-        # Update each tap, one after another
-        for tap in taps
-            tapname = basename(tap)
-            @show namespace = basename(dirname(tap))
-            println("Updating tap $tapname")
-            brew(`tap --full $namespace/$tapname`)
-            @show taprepo = LibGit2.GitRepo(tap)
-            #@show tapremote = LibGit2.get(LibGit2.GitRemote, taprepo, "origin")
-            @show LibGit2.fetch(taprepo) #, remote="origin")
-            #@show refspec = LibGit2.fetch_refspecs(tapremote)
-            #@show LibGit2.fetch(tapremote,refspec)
-            @show TAP_BRANCH = LibGit2.branch(taprepo)
-            @show TAP_OBJ = LibGit2.revparse(taprepo, "origin/$TAP_BRANCH")
-            @show LibGit2.reset!(taprepo, TAP_OBJ, LibGit2.Consts.RESET_HARD)
-        end
-=#
         upgrade()
     end
 end
