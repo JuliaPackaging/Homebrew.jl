@@ -16,7 +16,11 @@ const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
 const brew_exe = joinpath(brew_prefix,"bin","brew")
 const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebrew-juliadeps")
 
-const BREW_URL = "https://github.com/Homebrew/homebrew.git"
+if VERSION < v"0.5.0-dev+522"
+    const BREW_URL = "https://github.com/Homebrew/homebrew.git"
+else
+    const BREW_URL = "https://github.com/Homebrew/brew.git"
+end
 const BREW_BRANCH = "master"
 const BOTTLE_SERVER = "https://juliabottles.s3.amazonaws.com"
 
@@ -92,8 +96,8 @@ function install_brew()
             LibGit2.set!(config,"remote.origin.url",BREW_URL)
             LibGit2.set!(config,"remote.origin.fetch","+refs/heads/master:refs/remotes/origin/master")
             LibGit2.fetch(remote,LibGit2.fetch_refspecs(remote))
-            MASTER_BRANCH = LibGit2.revparse(repo, "origin/$BREW_BRANCH")
-            LibGit2.reset!(repo, MASTER_BRANCH, LibGit2.Consts.RESET_HARD)
+            MASTER_OBJ = LibGit2.revparse(repo, "origin/$BREW_BRANCH")
+            LibGit2.reset!(repo, MASTER_OBJ, LibGit2.Consts.RESET_HARD)
         end
     end
 
@@ -155,21 +159,7 @@ if VERSION < v"0.5.0-dev+522"
     end
 else
     function update()
-        repo = LibGit2.GitRepo(brew_prefix)
-        remote = LibGit2.get(LibGit2.GitRemote, repo, "origin")
-        
-        tapsdir = joinpath(brew_prefix,"Library","Taps")
-        namespaces = readdir(tapsdir)
-        ns_taps = [[joinpath(tapsdir, ns, tap) for tap in readdir(joinpath(tapsdir, ns))] for ns in namespaces]
-        taps = vcat(ns_taps...)
-
-        # Update each tap, one after another
-        for tap in taps
-            println("Updating tap $(basename(tap))")
-            LibGit2.fetch(remote,[BREW_BRANCH])
-            TAP_BRANCH = LibGit2.revparseid(repo, tappath)
-            LibGit2.reset!(repo, TAP_BRANCH, LibGit2.Consts.RESET_HARD)
-        end
+        brew(`update`)
         upgrade()
     end
 end
