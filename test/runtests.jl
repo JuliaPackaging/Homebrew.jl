@@ -8,6 +8,7 @@ println("Using Homebrew.jl installed to $(Homebrew.prefix())")
 pkg_was_installed = Homebrew.installed("pkg-config")
 
 if pkg_was_installed
+    info("Removing pkg-config for our testing...")
     Homebrew.rm("pkg-config")
 end
 
@@ -28,6 +29,22 @@ println(" installed to: $(Homebrew.prefix(pkgconfig))")
 @test Homebrew.linked("pkg-config") == true
 @test Homebrew.linked(pkgconfig) == true
 
+@test Homebrew.deps("pkg-config") == []
+@test Homebrew.deps(pkgconfig) == []
+@test Homebrew.deps("nettle") == [Homebrew.info("gmp")]
+@test Homebrew.deps(Homebrew.info("nettle")) == [Homebrew.info("gmp")]
+
+# Run through our sorted deps routines, ensuring that everything is sorted
+sortdeps = Homebrew.deps_sorted("pango")
+for idx in 1:length(sortdeps)
+    for dep in Homebrew.deps(sortdeps[idx])
+        depidx = findfirst(x -> (x.name == dep.name), sortdeps)
+        @test depidx != 0
+        @test depidx < idx
+    end
+end
+
+
 # Can't really do anything useful with these, but can at least run them to ensure they work
 Homebrew.outdated()
 Homebrew.update()
@@ -40,5 +57,6 @@ Homebrew.rm(pkgconfig)
 @test Homebrew.linked("pkg-config") == false
 
 if pkg_was_installed
+    info("Adding pkg-config back again...")
     Homebrew.add("pkg-config")
 end
