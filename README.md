@@ -56,20 +56,3 @@ A common question is why bother with Homebrew formulae and such when a package a
 
 * Releasing new versions of binaries can be difficult.  Homebrew.jl has builtin mechanisms for upgrading all old packages, and even detecting when a binary of the same version number has a new revision (e.g. if an old binary had an error embedded inside it).  The Julia build process itself often falls prey to this exact problem when newer versions of dependencies come out (whether with version number bumps or no).
 
-
-
-Why doesn't this package use my system-wide Homebrew installation?
-================================================================
-
-We decided not to support this for two reasons:
-
-Some of the formulae in the [staticfloat/juliadeps tap](https://github.com/staticfloat/homebrew-juliadeps) are specifically patched to work with Julia. Some of these patches have not (or will not) be merged back into Homebrew mainline, so we don't want to conflict with any packages the user may or may not have installed.
-
-The second reason is that we have modified Homebrew itself to support installation of Formulae without a compiler available on the user's machine.
-
-Users can modify Homebrew's internal workings, so it's better to have a known good Homebrew fork than to risk bug reports from users that have unknowingly merged patches into Homebrew that break functionality we require
-
-The biggest reason is the patches that have been applied to Homebrew itself. This package is pretty much meant to serve bottles only; you should never need to compile anything when using `Homebrew.jl`. This is on purpose, as there are many users who may wish to install packages for Julia, but don't have Xcode installed.
-
-If you already have something installed, and it is usable, (e.g. `BinDeps` can load it and it passes any quick internal tests the Package authors have defined) then `Homebrew.jl` won't try to install it. `BinDeps` always checks to see if there is a library in the current load path that satisfies the requirements setup by package authors, and if there is, it doesn't build anything.
-
