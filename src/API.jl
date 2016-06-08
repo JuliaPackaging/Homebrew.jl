@@ -53,6 +53,8 @@ function update()
     upgrade()
 end
 
+AbstractStringOrPkg = @compat Union{AbstractString, BrewPkg}
+
 """
 prefix()
 
@@ -63,21 +65,17 @@ function prefix()
 end
 
 """
-prefix(name::AbstractString)
+prefix(pkg::Union{AbstractString,BrewPkg})
 
 Returns the prefix for a particular package's latest installed version.
 """
+function prefix(pkg::AbstractStringOrPkg) end
 function prefix(name::AbstractString)
     return joinpath(brew_prefix, "Cellar", name, info(name).version)
 end
 
-"""
-prefix(pkg::BrewPkg)
-
-Returns the prefix for a particular package's latest installed version.
-"""
-function prefix(pkg::BrewPkg)
-    prefix(pkg.name)
+for f in (:prefix, :json, :deps, :deps_tree, :deps_sorted)
+    @eval $f(pkg::BrewPkg) = $f(pkg.name)
 end
 
 """
@@ -137,7 +135,7 @@ we have special logic inside of `add()` to install from our tap before trying to
 install from mainline Homebrew.
 """
 function upgrade()
-    # We have to manually upgrade each package, as `brew upgrade` will pull from mxcl/master
+    # We have to manually upgrade each package, as `brew upgrade` will pull from homebrew-core/master
     for pkg in outdated()
         rm(pkg)
         add(pkg)
@@ -189,22 +187,7 @@ function json{T<:AbstractString}(names::Vector{T})
 end
 
 """
-json(name::AbstractString)
-
-Return the full JSON object for `name`, the result of `brew info --json=v1 \$name`.
-If `brew info` fails, throws an error.  If `brew info` returns an empty object,
-(e.g. "[]"), this returns an empty Dict.
-
-Note that running `brew info --json=v1` is somewhat expensive, so we cache the
-results in a global dictionary, and batching larger requests with this function
-similarly increases performance.
-"""
-function json(name::AbstractString)
-    return json([name])[name]
-end
-
-"""
-json(pkg::BrewPkg)
+json(pkg::Union{AbstractString,BrewPkg})
 
 Return the full JSON object for `pkg`, the result of `brew info --json=v1 \$pkg`.
 If `brew info` fails, throws an error.  If `brew info` returns an empty object,
@@ -214,8 +197,9 @@ Note that running `brew info --json=v1` is somewhat expensive, so we cache the
 results in a global dictionary, and batching larger requests with this function
 similarly increases performance.
 """
-function json(pkg::BrewPkg)
-    return json([pkg.name])[pkg.name]
+function json(pkg::AbstractStringOrPkg) end
+function json(name::AbstractString)
+    return json([name])[name]
 end
 
 """
@@ -268,10 +252,11 @@ function info(name::AbstractString)
 end
 
 """
-deps(name::AbstractString)
+deps(pkg::Union{AbstractString,BrewPkg})
 
-Return a list of all direct dependencies of `name` as a `Vector{BrewPkg}`
+Return a list of all direct dependencies of `pkg` as a `Vector{BrewPkg}`
 """
+function deps(pkg::AbstractStringOrPkg) end
 function deps(name::AbstractString)
     obj = json(normalize_name(name))
 
@@ -282,20 +267,12 @@ function deps(name::AbstractString)
 end
 
 """
-deps(pkg::BrewPkg)
+deps_tree(pkg::Union{AbstractString,BrewPkg})
 
-Return a list of all direct dependencies of `pkg` as a `Vector{BrewPkg}`
-"""
-function deps(pkg::BrewPkg)
-    return deps(pkg.name)
-end
-
-"""
-deps_tree(name::AbstractString)
-
-Return a dictionary mapping every dependency (both direct and indirect) of `name`
+Return a dictionary mapping every dependency (both direct and indirect) of `pkg`
 to a `Vector{BrewPkg}` of all of its dependencies.  Used in `deps_sorted()`.
 """
+function deps_tree(pkg::AbstractStringOrPkg) end
 function deps_tree(name::AbstractString)
     # First, get all the knowledge we need about dependencies
     deptree = Dict{String,Vector{BrewPkg}}()
@@ -320,16 +297,6 @@ function deps_tree(name::AbstractString)
     end
 
     return deptree
-end
-
-"""
-deps_tree(pkg::BrewPkg)
-
-Return a dictionary mapping every dependency (both direct and indirect) of `pkg`
-to a `Vector{BrewPkg}` of all of its dependencies.  Used in `deps_sorted()`.
-"""
-function deps_tree(pkg::BrewPkg)
-    return deps_tree(pkg.name)
 end
 
 """
@@ -369,11 +336,12 @@ function insert_after_dependencies(tree::Dict, sorted_deps::Vector{BrewPkg}, nam
 end
 
 """
-deps_sorted(name::AbstractString)
+deps_sorted(pkg::Union{AbstractString,BrewPkg})
 
 Return a sorted `Vector{BrewPkg}` of all dependencies (direct and indirect) such
 that each entry in the list appears after all of its own dependencies
 """
+function deps_sorted(pkg::AbstractStringOrPkg) end
 function deps_sorted(name::AbstractString)
     tree = deps_tree(name)
     sorted_deps = BrewPkg[]
@@ -389,21 +357,12 @@ function deps_sorted(name::AbstractString)
 end
 
 """
-deps_sorted(name::AbstractString)
-
-Return a sorted `Vector{BrewPkg}` of all dependencies (direct and indirect) such
-that each entry in the list appears after all of its own dependencies
-"""
-function deps_sorted(pkg::BrewPkg)
-    return deps_sorted(pkg.name)
-end
-
-"""
-add(name::AbstractString; verbose=false)
+add(pkg::Union{AbstractString,BrewPkg}; verbose=false)
 
 Install a package and all dependencies, using bottles only, unlinking any
 previous versions if necessary, and linking the new ones in place.
 """
+function add(pkg::AbstractStringOrPkg; verbose=false) end
 function add(name::AbstractString; verbose=false)
     name = normalize_name(name)
 
@@ -416,24 +375,18 @@ function add(name::AbstractString; verbose=false)
     install_and_link(name; verbose=verbose)
 end
 
-"""
-add(pkg::BrewPkg; verbose=false)
-
-Install a package and all dependencies, using bottles only, unlinking any
-previous versions if necessary, and linking the new ones in place.
-"""
-function add(pkg::BrewPkg; verbose=false)
-    add(pkg.name, verbose=verbose)
+for f in (:add, :install_and_link, :postinstall)
+    @eval $f(pkg::BrewPkg; verbose::Bool=false) = $f(pkg.name; verbose=verbose)
 end
 
-
 """
-install_and_link(name::AbstractString; verbose=false)
+install_and_link(pkg::Union{AbstractString,BrewPkg}; verbose=false)
 
-Unlinks, installs, and links package `name`.  Used by `add()`.  Don't call
+Unlinks, installs, and links package `pkg`.  Used by `add()`.  Don't call
 manually unless you really know what you're doing, as this doesn't deal with
 dependencies, and so can trigger compilation when you don't want it to.
 """
+function install_and_link(pkg::AbstractStringOrPkg; verbose=false) end
 function install_and_link(name::AbstractString; verbose::Bool=false)
     if linked(name)
         unlink(name; verbose=verbose)
@@ -445,54 +398,30 @@ function install_and_link(name::AbstractString; verbose::Bool=false)
 end
 
 """
-install_and_link(pkg::BrewPkg; verbose=false)
-
-Unlinks, installs, and links package `name`.  Used by `add()`.  Don't call
-manually unless you really know what you're doing, as this doesn't deal with
-dependencies, and so can trigger compilation when you don't want it to.
-"""
-function install_and_link(pkg::BrewPkg; verbose::Bool=false)
-    return install_and_link(pkg.name; verbose=verbose)
-end
-
-
-"""
-postinstall(name::AbstractString; verbose=false)
-
-Runs `brew postinstall` against package `name`, useful for debugging complicated
-formulae when a bottle doesn't install right and you want to re-run postinstall.
-"""
-function postinstall(pkg::AbstractString; verbose::Bool=false)
-    brew(`postinstall $pkg`, verbose=verbose)
-end
-
-"""
-postinstall(pkg::BrewPkg; verbose=false)
+postinstall(pkg::Union{AbstractString,BrewPkg}; verbose=false)
 
 Runs `brew postinstall` against package `pkg`, useful for debugging complicated
 formulae when a bottle doesn't install right and you want to re-run postinstall.
 """
-function postinstall(pkg::BrewPkg; verbose::Bool=false)
-    postinstall(pkg.name, verbose=verbose)
+function postinstall(pkg::AbstractStringOrPkg; verbose=false) end
+function postinstall(pkg::AbstractString; verbose::Bool=false)
+    brew(`postinstall $pkg`, verbose=verbose)
 end
 
 
 """
-link(name::AbstractString; verbose=false, force=true)
+link(pkg::Union{AbstractString,BrewPkg}; verbose=false, force=true)
 
-Link package `name` into the global namespace, uses `--force` if `force == true`
+Link package `pkg` into the global namespace, uses `--force` if `force == true`
 """
+function link(pkg::AbstractStringOrPkg; verbose=false, force=true) end
 function link(name::AbstractString; verbose::Bool=false, force::Bool=true)
     brew(`link $name`, no_stdout=true, verbose=verbose, force=force)
 end
 
-"""
-link(pkg::BrewPkg; verbose=false, force=true)
-
-Link package `pkg` into the global namespace, uses `--force` if `force == true`
-"""
-function link(pkg::BrewPkg; verbose::Bool=false, force::Bool=true)
-    return link(pkg.name; force=force, verbose=verbose)
+for f in (:link, :rm)
+    @eval $f(pkg::BrewPkg; verbose::Bool=false, force::Bool=true) =
+        $f(pkg.name; verbose=verbose, force=force)
 end
 
 
@@ -516,21 +445,13 @@ end
 
 
 """
-rm(name::AbstractString; verbose=false, force=true)
+rm(pkg::Union{AbstractString,BrewPkg}; verbose=false, force=true)
 
-Remove package `name`, use `--force` if `force` == `true`
+Remove package `pkg`, use `--force` if `force` == `true`
 """
+function rm(pkg::AbstractStringOrPkg; verbose=false, force=true) end
 function rm(pkg::AbstractString; verbose::Bool=false, force=true)
     brew(`rm $pkg`; verbose=verbose, force=force)
-end
-
-"""
-rm(pkg::BrewPkg; verbose=false, force=true)
-
-Remove package `name`, use `--force` if `force` == `true`
-"""
-function rm(pkg::BrewPkg; verbose::Bool=false, force=true)
-    return rm(pkg.name; verbose=verbose, force=force)
 end
 
 

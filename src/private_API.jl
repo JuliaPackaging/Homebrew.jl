@@ -5,9 +5,8 @@
 # location of files within the Cellar
 
 const tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebrew-juliadeps")
-#const BREW_URL = "https://github.com/Homebrew/brew"
-const BREW_URL = "https://github.com/staticfloat/brew"
-const BREW_BRANCH = "sf/no_clt_no_problem"
+const BREW_URL = "https://github.com/Homebrew/brew"
+const BREW_BRANCH = "master"
 const BOTTLE_SERVER = "https://juliabottles.s3.amazonaws.com"
 
 
