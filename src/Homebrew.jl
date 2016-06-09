@@ -1,3 +1,4 @@
+VERSION >= v"0.4.0" && __precompile__()
 module Homebrew
 
 import Base: show
@@ -8,7 +9,7 @@ using Compat; import Compat.String
 const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
 const brew_exe = joinpath(brew_prefix,"bin","brew")
 
-const DL_LOAD_PATH = VERSION >= v"0.4.0-dev+3844" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
+const DL_LOAD_PATH = VERSION >= v"0.4.0" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
 
 
 # Types and show() overrides, etc..
@@ -22,13 +23,14 @@ include("API.jl")
 
 # The private API that peeks into the internals of Homebrew a bit
 include("private_API.jl")
+include("translation.jl")
 
 # Include our own, personal bindeps integration stuff
 include("bindeps_integration.jl")
 
 
 """
-__init__()
+`__init__()`
 
 Initialization function.  Calls `install_brew()` to ensure that everything we
 need is downloaded/installed, then calls `update_env()` to set the environment

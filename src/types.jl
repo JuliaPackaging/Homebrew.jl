@@ -1,5 +1,5 @@
 """
-BrewPkg
+`BrewPkg`
 
 A simple type to give us some nice ways of representing our packages to the user
 
@@ -15,24 +15,33 @@ immutable BrewPkg
 
     # The version of this brew package
     version::String
-
-    # Whether this package was translated
-    translated::Bool
-
-    # We don't do translation yet, but prepare for it.
-    BrewPkg(n, t, v) = new(n, t, v, false)
 end
 
+"""
+`fullname(pkg::BrewPkg)`
+
+Return the fully-qualified name for a package, dropping "Homebrew/core"
+"""
+function fullname(pkg::BrewPkg)
+    if pkg.tap == "Homebrew/core"
+        return pkg.name
+    end
+    return joinpath(pkg.tap,pkg.name)
+end
 
 """
-show(io::IO, b::BrewPkg)
+`show(io::IO, b::BrewPkg)`
 
-Writes a BrewPkg to io, showing its version number and whether it's bottled.
+Writes a `BrewPkg` to `io`, showing tap, name and version number
 """
 function show(io::IO, b::BrewPkg)
-    pkgname = b.name
-    if b.tap != "Homebrew/core"
-        pkgname = "$(b.tap)/$pkgname"
-    end
-    write(io, "$pkgname: $(b.version) $(b.translated ? "(translated)" : "")")
+    write(io, "$(fullname(b)): $(b.version)")
 end
+
+
+"""
+`StringOrPkg`
+
+A convenience type accepting either an `AbstractString` or a `BrewPkg`
+"""
+StringOrPkg = @compat Union{AbstractString, BrewPkg}

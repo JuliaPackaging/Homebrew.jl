@@ -2,7 +2,7 @@ using Homebrew
 using Base.Test
 
 # Print some debugging info
-println("Using Homebrew.jl installed to $(Homebrew.prefix())")
+info("Using Homebrew.jl installed to $(Homebrew.prefix())")
 
 # Restore pkg-config to its installed (or non-installed) state at the end of all of this
 pkg_was_installed = Homebrew.installed("pkg-config")
@@ -19,16 +19,19 @@ Homebrew.add("pkg-config")
 # Now show that we have it
 pkgconfig = Homebrew.info("pkg-config")
 version = readchomp(`pkg-config --version`)
-@test version == pkgconfig.version[1:length(version)]
+@test version == pkgconfig.version
 @test Homebrew.installed(pkgconfig) == true
-display(pkgconfig)
-println(" installed to: $(Homebrew.prefix(pkgconfig))")
+info("$(pkgconfig) installed to: $(Homebrew.prefix(pkgconfig))")
+
+@test isdir(Homebrew.prefix("pkg-config"))
+@test isdir(Homebrew.prefix(pkgconfig))
 
 # Run through some of the Homebrew API, both with strings and with BrewPkg objects
 @test length(filter(x -> x.name == "pkg-config", Homebrew.list())) > 0
 @test Homebrew.linked("pkg-config") == true
 @test Homebrew.linked(pkgconfig) == true
 
+# Test dependency inspection
 @test Homebrew.deps("pkg-config") == []
 @test Homebrew.deps(pkgconfig) == []
 @test Homebrew.deps("nettle") == [Homebrew.info("gmp")]
@@ -44,15 +47,25 @@ for idx in 1:length(sortdeps)
     end
 end
 
-@test Homebrew.is_cellar_any("cairo") == false
-@test Homebrew.is_cellar_any("staticfloat/juliadeps/cairo") == true
+# Test that we can probe for bottles properly
+@test Homebrew.has_bottle("ld64") == false
+@test Homebrew.has_bottle("cairo") == true
+@test Homebrew.has_relocatable_bottle("cairo") == false
+@test Homebrew.has_relocatable_bottle("fontconfig") == true
 
+# Test that we can translate properly
+@test Homebrew.translate_formula("gettext"; verbose=true) == "staticfloat/juliatranslated/gettext"
+@test Homebrew.translate_formula("ld64"; verbose=true) == "ld64"
+
+# Make sure translation works properly with other taps
+@test Homebrew.translate_formula("Homebrew/science/hdf5") == "staticfloat/juliatranslated/hdf5"
 
 # Can't really do anything useful with these, but can at least run them to ensure they work
 Homebrew.outdated()
 Homebrew.update()
 Homebrew.postinstall("pkg-config")
 Homebrew.postinstall(pkgconfig)
+Homebrew.delete_all_translated_formulae(verbose=true)
 
 # Test deletion as well
 Homebrew.rm(pkgconfig)

@@ -45,7 +45,7 @@ nettle = library_dependency("nettle", aliases = ["libnettle","libnettle-4-6"])
 end
 ```
 
-Then, the `Homebrew` package will automatically download the requisite bottles for any dependencies you state it can provide.
+Then, the `Homebrew` package will automatically download the requisite bottles for any dependencies you state it can provide.  This example garnered from the `build.jl` file from [`Nettle.jl` package](https://github.com/staticfloat/Nettle.jl/blob/master/deps/build.jl).
 
 
 ## Why Package Authors should use Homebrew.jl
@@ -53,9 +53,9 @@ A common question is why bother with Homebrew formulae and such when a package a
 
 * On OSX shared libraries link via full paths.  This means that unless you manually alter the path inside of a `.dylib` or binary to have an `@rpath` or `@executable_path` in it, the path will be attempting to point to the exact location on your harddrive that the shared library was found at compile-time.  This is not an issue if all libraries linked to are standard system libraries, however as soon as you wish to link to a library in a non-standard location you must alter the paths.  Homebrew does this for you automatically, rewriting the paths during installation via `install_name_tool`.  To see the paths embedded in your libraries and executable files, run `otool -L <file>`.
 
-* Dependencies on other libraries are handled gracefully by Homebrew.  If your package requires some heavy-weight library such as `cairo`, `glib`, etc... Homebrew already has those libraries ready to be built for you.  Just add a `depends_on` line into your Homebrew formula, and you're ready to go.
+* Dependencies on other libraries are handled gracefully by Homebrew.  If your package requires some heavy-weight library such as `cairo`, `glib`, etc... Homebrew already has those libraries ready to be installed for you.
 
-* Releasing new versions of binaries can be difficult.  Homebrew.jl has builtin mechanisms for upgrading all old packages, and even detecting when a binary of the same version number has a new revision (e.g. if an old binary had an error embedded inside it).  The Julia build process itself often falls prey to this exact problem when newer versions of dependencies come out (whether with version number bumps or no).
+* Releasing new versions of binaries can be difficult.  Homebrew.jl has builtin mechanisms for upgrading all old packages, and even detecting when a binary of the same version number has a new revision (e.g. if an old binary had an error embedded inside it).
 
 
 
@@ -63,6 +63,6 @@ A common question is why bother with Homebrew formulae and such when a package a
 
 Some of the formulae in the [staticfloat/juliadeps tap](https://github.com/staticfloat/homebrew-juliadeps) are specifically patched to work with Julia. Some of these patches have not (or will not) be merged back into Homebrew mainline, so we don't want to conflict with any packages the user may or may not have installed.
 
-Users can modify Homebrew's internal workings, so it's better to have a known good Homebrew fork than to risk bug reports from users that have unknowingly merged patches into Homebrew that break functionality we require
+Users can modify Homebrew's internal workings, so it's better to have a known good Homebrew installation than to risk bug reports from users that have unknowingly merged patches into Homebrew that break functionality we require.
 
 If you already have something installed, and it is usable, (e.g. `BinDeps` can load it and it passes any quick internal tests the Package authors have defined) then `Homebrew.jl` won't try to install it. `BinDeps` always checks to see if there is a library in the current load path that satisfies the requirements setup by package authors, and if there is, it doesn't build anything.
