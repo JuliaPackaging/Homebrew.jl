@@ -68,9 +68,7 @@ prefix(name::AbstractString)
 Returns the prefix for a particular package's latest installed version.
 """
 function prefix(name::AbstractString)
-    cellar_path = joinpath(brew_prefix, "Cellar", name)
-    version_str = info(name).version_str
-    return joinpath(brew_prefix, "Cellar", name, version_str)
+    return joinpath(brew_prefix, "Cellar", name, info(name).version)
 end
 
 """
@@ -88,19 +86,14 @@ list()
 Returns a list of all installed packages as a `Vector{BrewPkg}`
 """
 function list()
-    brew_list = brewchomp(`list --versions`)
-    if !isempty(brew_list)
-        pkgs = BrewPkg[]
-        for f in split(brew_list,"\n")
-            name = split(f, " ")[1]
-            vers = make_version(name, split(f, " ")[2])
-            vers_str = split(f, " ")[2]
-            push!(pkgs, BrewPkg(name, vers, vers_str, false))
-        end
-        return pkgs
-    else
-        BrewPkg[]
+    # Get list of fully-qualified installed packages
+    names = split(brewchomp(`list --full-name`), "\n")
+
+    # If we've got something, then return info on all those names
+    if !isempty(names)
+        return info(names)
     end
+    return BrewPkg[]
 end
 
 """
@@ -165,9 +158,6 @@ results in a global dictionary, and batching larger requests with this function
 similarly increases performance.
 """
 function json{T<:AbstractString}(names::Vector{T})
-    # First, normalize all names
-    names = String[normalize_name(n) for n in names]
-
     # This is the dictionary of responses we'll return
     objs = Dict{String,Dict{AbstractString,Any}}()
 
@@ -210,7 +200,7 @@ results in a global dictionary, and batching larger requests with this function
 similarly increases performance.
 """
 function json(name::AbstractString)
-    return json([name])[normalize_name(name)]
+    return json([name])[name]
 end
 
 """
@@ -225,7 +215,7 @@ results in a global dictionary, and batching larger requests with this function
 similarly increases performance.
 """
 function json(pkg::BrewPkg)
-    return json([pkg.name])[normalize_name(pkg.name)]
+    return json([pkg.name])[pkg.name]
 end
 
 """
@@ -235,31 +225,32 @@ For each name in `names`, returns information about that particular package name
 as a BrewPkg.  This is our batched `String` -> `BrewPkg` converter.
 """
 function info{T<:AbstractString}(names::Vector{T})
+    # First, normalize all names
+    names = String[normalize_name(n) for n in names]
+
     # Get the JSON representations of all of these packages
     objs = json(names)
 
     infos = BrewPkg[]
     for name in names
-        obj = objs[normalize_name(name)]
+        obj = objs[name]
 
         # First, get name and version
         obj_name = obj["name"]
-        version = make_version(obj_name, obj["versions"]["stable"])
-        version_str = obj["versions"]["stable"]
+        version = obj["versions"]["stable"]
 
-        # Manually append the revision to the end of the version_str, as brew is wont to do
+        # Manually append the revision to the end of the version, as brew is wont to do
         if obj["revision"] > 0
-            version_str *= "_$(obj["revision"])"
+            version *= "_$(obj["revision"])"
         end
-        bottled = obj["versions"]["bottle"]
 
-        # If we actually have a keg, return whether it was poured
-        if !isempty(obj["installed"])
-            bottled = obj["installed"][1]["poured_from_bottle"]
+        tap = dirname(obj["full_name"])
+        if isempty(tap)
+            tap = "Homebrew/core"
         end
 
         # Push that BrewPkg onto our infos object
-        push!(infos, BrewPkg(obj_name, version, version_str, bottled))
+        push!(infos, BrewPkg(obj_name, tap, version))
     end
 
     # Return the list of infos
@@ -282,7 +273,7 @@ deps(name::AbstractString)
 Return a list of all direct dependencies of `name` as a `Vector{BrewPkg}`
 """
 function deps(name::AbstractString)
-    obj = json(name)
+    obj = json(normalize_name(name))
 
     # Iterate over all dependencies, removing optional dependencies
     dependencies = String[dep for dep in obj["dependencies"]]
@@ -342,7 +333,7 @@ function deps_tree(pkg::BrewPkg)
 end
 
 """
-insert_after_dependencies(tree::Dict, sorted_deps::Vector{BrewPkg}, name::String)
+insert_after_dependencies(tree::Dict, sorted_deps::Vector{BrewPkg}, name::AbstractString)
 
 Given a mapping from names to dependencies in `tree`, and a list of sorted
 dependencies in `sorted_deps`, insert a new dependency `name` into `sorted_deps`
@@ -552,4 +543,19 @@ function tap(tap_name::AbstractString; verbose::Bool=false)
     if !tap_exists(tap_name)
         brew(`tap $tap_name`; verbose=verbose)
     end
+end
+
+
+"""
+is_cellar_any(name::AbstractString)
+
+Checks to see if a given formula has a bottle that can be installed anywhere
+
+Note that this function does not normalize names, so to query a tap's formula,
+you should pass the full name in.
+"""
+function is_cellar_any(name::AbstractString)
+    obj = json(name)
+
+    return obj["bottle"]["stable"]["cellar"] in [":any", ":any_skip_relocation"]
 end

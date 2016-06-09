@@ -52,45 +52,45 @@ function install_brew()
 end
 
 """
-tap_overrides(name::String; tap_path::String=tappath)
+tap_overrides(name::AbstractString; tap_path::AbstractString=tappath)
 
 Check to see if a tap (defaults to the staticfloat/juliadeps tap) overrides the
 given package name, returning true if it is overridden.
 """
-function tap_overrides(name::String; tap_path::String = tappath)
+function tap_overrides(name::AbstractString; tap_path::AbstractString = tappath)
     cd(tap_path) do
         return isfile("$name.rb")
     end
 end
 
 """
-tap_overrides(pkg::BrewPkg; tap_path::String=tappath)
+tap_overrides(pkg::BrewPkg; tap_path::AbstractString=tappath)
 
 Check to see if a tap (defaults to the staticfloat/juliadeps tap) overrides the
 given package name, returning true if it is overridden.
 """
-function tap_overrides(pkg::BrewPkg; tap_path::String = tappath)
+function tap_overrides(pkg::BrewPkg; tap_path::AbstractString = tappath)
     return tap_overrides(pkg.name; tap_path = tap_path)
 end
 
 """
-tap_exists(tap_name::String)
+tap_exists(tap_name::AbstractString)
 
 Check to see if a certain tap exists
 """
-function tap_exists(tap_name::String)
+function tap_exists(tap_name::AbstractString)
     path = joinpath(brew_prefix,"Library","Taps", dirname(tap_name), "homebrew-$(basename(tap_name))")
     return isdir(path)
 end
 
 
 """
-installed(name::String)
+installed(name::AbstractString)
 
 Return true if the given package `name` is a directory in the Cellar, showing
-that is has been installed (but possibly not linked, see `linked()`)
+that it has been installed (but possibly not linked, see `linked()`)
 """
-function installed(name::String)
+function installed(name::AbstractString)
     isdir(joinpath(brew_prefix,"Cellar",name))
 end
 
@@ -98,19 +98,19 @@ end
 installed(pkg::BrewPkg)
 
 Return true if the given package `pkg` is a directory in the Cellar, showing
-that is has been installed (but possibly not linked, see `linked()`)
+that it has been installed (but possibly not linked, see `linked()`)
 """
 function installed(pkg::BrewPkg)
     installed(pkg.name)
 end
 
 """
-linked(name::String)
+linked(name::AbstractString)
 
 Returns true if the given package `name` is linked to LinkedKegs, signifying
 all files installed by this package have been linked into the global prefix.
 """
-function linked(name::String)
+function linked(name::AbstractString)
     return islink(joinpath(brew_prefix,"Library","LinkedKegs",name))
 end
 

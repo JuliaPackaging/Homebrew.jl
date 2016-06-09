@@ -18,8 +18,8 @@ Homebrew.add("pkg-config")
 
 # Now show that we have it
 pkgconfig = Homebrew.info("pkg-config")
-version_str = readchomp(`pkg-config --version`)
-@test version_str == pkgconfig.version_str[1:length(version_str)]
+version = readchomp(`pkg-config --version`)
+@test version == pkgconfig.version[1:length(version)]
 @test Homebrew.installed(pkgconfig) == true
 display(pkgconfig)
 println(" installed to: $(Homebrew.prefix(pkgconfig))")
@@ -43,6 +43,9 @@ for idx in 1:length(sortdeps)
         @test depidx < idx
     end
 end
+
+@test Homebrew.is_cellar_any("cairo") == false
+@test Homebrew.is_cellar_any("staticfloat/juliadeps/cairo") == true
 
 
 # Can't really do anything useful with these, but can at least run them to ensure they work
