@@ -52,6 +52,7 @@ end
 @test Homebrew.has_bottle("cairo") == true
 @test Homebrew.has_relocatable_bottle("cairo") == false
 @test Homebrew.has_relocatable_bottle("fontconfig") == true
+@test Homebrew.json(pkgconfig)["name"] == "pkg-config"
 
 # Test that we can translate properly
 @test Homebrew.translate_formula("gettext"; verbose=true) == "staticfloat/juliatranslated/gettext"
@@ -59,12 +60,27 @@ end
 
 # Make sure translation works properly with other taps
 @test Homebrew.translate_formula("Homebrew/science/hdf5") == "staticfloat/juliatranslated/hdf5"
+# Do it a second time so we can practice that bailing out
+Homebrew.translate_formula("Homebrew/science/hdf5"; verbose=true)
+
+# Test more miscellaneous things
+@test Homebrew.formula_path("staticfloat/juliadeps/fontconfig") == joinpath(Homebrew.tappath, "fontconfig.rb")
+@test !isempty(Homebrew.read_formula("xz"))
+@test_throws ArgumentError Homebrew.add("thisisntapackagename")
+
+Homebrew.unlink(pkgconfig)
+@test Homebrew.installed(pkgconfig) == true
+@test Homebrew.linked(pkgconfig) == false
+Homebrew.link(pkgconfig)
+@test Homebrew.installed(pkgconfig) == true
+@test Homebrew.linked(pkgconfig) == true
 
 # Can't really do anything useful with these, but can at least run them to ensure they work
 Homebrew.outdated()
 Homebrew.update()
 Homebrew.postinstall("pkg-config")
 Homebrew.postinstall(pkgconfig)
+Homebrew.delete_translated_formula("gettext"; verbose=true)
 Homebrew.delete_all_translated_formulae(verbose=true)
 
 # Test deletion as well

@@ -58,24 +58,6 @@ function install_brew()
 end
 
 """
-`tap_contains(pkg::Union{AbstractString,BrewPkg}, tap_path::AbstractString)`
-
-Check to see if a tap (identified by the absolute path `tap_path`) contains the
-given package `pkg`
-"""
-function tap_contains(pkg::StringOrPkg, tap_path::AbstractString) end
-
-function tap_contains(name::AbstractString, tap_path::AbstractString)
-    cd(tap_path) do
-        return isfile("$name.rb")
-    end
-end
-
-function tap_contains(pkg::BrewPkg, tap_path::AbstractString)
-    return tap_contains(pkg.name, tap_path)
-end
-
-"""
 `tap_exists(tap_name::AbstractString)`
 
 Check to see if a tap called `tap_name` (ex: `"staticfloat/juliadeps"`) exists
