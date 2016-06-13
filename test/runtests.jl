@@ -57,15 +57,19 @@ end
 # Test that we can translate properly
 @test Homebrew.translate_formula("gettext"; verbose=true) == "staticfloat/juliatranslated/gettext"
 @test Homebrew.translate_formula("ld64"; verbose=true) == "ld64"
+@test Homebrew.translate_formula("fontconfig"; verbose=true) == "staticfloat/juliadeps/fontconfig"
 
 # Make sure translation works properly with other taps
+Homebrew.delete_translated_formula("Homebrew/science/hdf5"; verbose=true)
 @test Homebrew.translate_formula("Homebrew/science/hdf5") == "staticfloat/juliatranslated/hdf5"
-# Do it a second time so we can practice that bailing out
-Homebrew.translate_formula("Homebrew/science/hdf5"; verbose=true)
+# Do it a second time so we can get coverage of practiing that particular method of bailing out
+Homebrew.translate_formula(Homebrew.info("Homebrew/science/hdf5"); verbose=true)
 
 # Test more miscellaneous things
-@test Homebrew.formula_path("staticfloat/juliadeps/fontconfig") == joinpath(Homebrew.tappath, "fontconfig.rb")
+fontconfig = Homebrew.info("staticfloat/juliadeps/fontconfig")
+@test Homebrew.formula_path(fontconfig) == joinpath(Homebrew.tappath, "fontconfig.rb")
 @test !isempty(Homebrew.read_formula("xz"))
+@test !isempty(Homebrew.read_formula(fontconfig))
 @test_throws ArgumentError Homebrew.add("thisisntapackagename")
 
 Homebrew.unlink(pkgconfig)
