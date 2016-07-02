@@ -56,7 +56,7 @@ end
 
 # Test that we can translate properly
 @test Homebrew.translate_formula("gettext"; verbose=true) == "staticfloat/juliatranslated/gettext"
-@test Homebrew.translate_formula("ld64"; verbose=true) == "ld64"
+@test Homebrew.translate_formula("ack"; verbose=true) == "ack"
 @test Homebrew.translate_formula("fontconfig"; verbose=true) == "staticfloat/juliadeps/fontconfig"
 
 # Make sure translation works properly with other taps
