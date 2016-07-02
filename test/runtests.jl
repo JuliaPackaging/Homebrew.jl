@@ -48,7 +48,7 @@ for idx in 1:length(sortdeps)
 end
 
 # Test that we can probe for bottles properly
-@test Homebrew.has_bottle("ld64") == false
+@test Homebrew.has_bottle("ack") == false
 @test Homebrew.has_bottle("cairo") == true
 @test Homebrew.has_relocatable_bottle("cairo") == false
 @test Homebrew.has_relocatable_bottle("fontconfig") == true
