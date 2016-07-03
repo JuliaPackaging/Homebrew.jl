@@ -48,7 +48,7 @@ for idx in 1:length(sortdeps)
 end
 
 # Test that we can probe for bottles properly
-@test Homebrew.has_bottle("ld64") == false
+@test Homebrew.has_bottle("ack") == false
 @test Homebrew.has_bottle("cairo") == true
 @test Homebrew.has_relocatable_bottle("cairo") == false
 @test Homebrew.has_relocatable_bottle("fontconfig") == true
@@ -56,7 +56,7 @@ end
 
 # Test that we can translate properly
 @test Homebrew.translate_formula("gettext"; verbose=true) == "staticfloat/juliatranslated/gettext"
-@test Homebrew.translate_formula("ld64"; verbose=true) == "ld64"
+@test Homebrew.translate_formula("ack"; verbose=true) == "ack"
 @test Homebrew.translate_formula("fontconfig"; verbose=true) == "staticfloat/juliadeps/fontconfig"
 
 # Make sure translation works properly with other taps
