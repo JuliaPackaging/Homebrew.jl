@@ -7,10 +7,5 @@ julia:
     - nightly
 notifications:
     email: false
-script:
-    - bash -c '[[ -a .git/shallow ]] && git fetch --unshallow'
-    - julia --color=yes -e 'Pkg.clone(pwd()); Pkg.build("Homebrew")'
-    - cd $(julia -e 'print(Pkg.dir("Homebrew"))')/deps/usr/Library/Taps/staticfloat/homebrew-juliadeps && git checkout sf/rewrite
-    - julia --color=yes -e 'Pkg.test("Homebrew", coverage=true)'
 after_success:
     - julia -e 'cd(Pkg.dir("Homebrew")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
