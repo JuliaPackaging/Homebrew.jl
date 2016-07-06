@@ -54,6 +54,9 @@ end
 @test Homebrew.has_relocatable_bottle("fontconfig") == true
 @test Homebrew.json(pkgconfig)["name"] == "pkg-config"
 
+# Test that has_bottle knows which OSX version we're running on.
+@test Homebrew.has_bottle("ld64") == false
+
 # Test that we can translate properly
 @test Homebrew.translate_formula("gettext"; verbose=true) == "staticfloat/juliatranslated/gettext"
 @test Homebrew.translate_formula("ack"; verbose=true) == "ack"

@@ -11,7 +11,6 @@ const brew_exe = joinpath(brew_prefix,"bin","brew")
 
 const DL_LOAD_PATH = VERSION >= v"0.4.0" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
 
-
 # Types and show() overrides, etc..
 include("types.jl")
 

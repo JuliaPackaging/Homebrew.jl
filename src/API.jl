@@ -528,13 +528,33 @@ function tap(tap_name::AbstractString; full::Bool=true, verbose::Bool=false)
     end
 end
 
+const OSX_VERSION = [""]
+function osx_version_string()
+    global OSX_VERSION
+    if isempty(OSX_VERSION[1])
+        OSX_VERSION[1] = join(split(readchomp(`sw_vers -productVersion`), ".")[1:2],".")
+    end
+    return [
+        "10.4" => "tiger",
+        "10.5" => "leopard",
+        "10.6" => "snow_leopard",
+        "10.7" => "lion",
+        "10.8" => "mountain_lion",
+        "10.9" => "mavericks",
+        "10.10" => "yosemite",
+        "10.11" => "el_capitan",
+        "10.12" => "sierra",
+    ][OSX_VERSION[1]]
+end
+
 """
 `has_bottle(name::AbstractString)`
 
 Checks if a given formula has a bottle at all
 """
 function has_bottle(name::AbstractString)
-    return haskey(json(name)["bottle"], "stable")
+    return haskey(json(name)["bottle"], "stable") &&
+           haskey(json(name)["bottle"]["stable"]["files"], osx_version_string())
 end
 
 """
