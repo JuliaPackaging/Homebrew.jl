@@ -534,7 +534,7 @@ function osx_version_string()
     if isempty(OSX_VERSION[1])
         OSX_VERSION[1] = join(split(readchomp(`sw_vers -productVersion`), ".")[1:2],".")
     end
-    return [
+    return @compat Dict(
         "10.4" => "tiger",
         "10.5" => "leopard",
         "10.6" => "snow_leopard",
@@ -543,8 +543,8 @@ function osx_version_string()
         "10.9" => "mavericks",
         "10.10" => "yosemite",
         "10.11" => "el_capitan",
-        "10.12" => "sierra",
-    ][OSX_VERSION[1]]
+        "10.12" => "sierra"
+    )[OSX_VERSION[1]]
 end
 
 """
