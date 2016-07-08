@@ -58,14 +58,19 @@ end
 @test Homebrew.has_bottle("ld64") == false
 
 # Test that we can translate properly
+info("Translation should pass:")
 @test Homebrew.translate_formula("gettext"; verbose=true) == "staticfloat/juliatranslated/gettext"
+info("Translation should fail because it has no bottles:")
 @test Homebrew.translate_formula("ack"; verbose=true) == "ack"
+info("Translation should fail because it is special-cased in staticfloat/juliadeps:")
 @test Homebrew.translate_formula("fontconfig"; verbose=true) == "staticfloat/juliadeps/fontconfig"
 
 # Make sure translation works properly with other taps
 Homebrew.delete_translated_formula("Homebrew/science/hdf5"; verbose=true)
-@test Homebrew.translate_formula("Homebrew/science/hdf5") == "staticfloat/juliatranslated/hdf5"
-# Do it a second time so we can get coverage of practiing that particular method of bailing out
+info("Translation should pass because we just deleted hdf5 from translation cache:")
+@test Homebrew.translate_formula("Homebrew/science/hdf5"; verbose=true) == "staticfloat/juliatranslated/hdf5"
+info("Translation should fail because hdf5 has already been translated:")
+# Do it a second time so we can get coverage of practicing that particular method of bailing out
 Homebrew.translate_formula(Homebrew.info("Homebrew/science/hdf5"); verbose=true)
 
 # Test more miscellaneous things
@@ -73,6 +78,7 @@ fontconfig = Homebrew.info("staticfloat/juliadeps/fontconfig")
 @test Homebrew.formula_path(fontconfig) == joinpath(Homebrew.tappath, "fontconfig.rb")
 @test !isempty(Homebrew.read_formula("xz"))
 @test !isempty(Homebrew.read_formula(fontconfig))
+info("add() should fail because this actually isn't a package name:")
 @test_throws ArgumentError Homebrew.add("thisisntapackagename")
 
 Homebrew.unlink(pkgconfig)
