@@ -199,11 +199,13 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
     # for a few important keys such as "bottle" and "full_name"
     for k in keys(new_obj)
         # Skip these keys, they always different
-        if k in ["bottle", "versions", "full_name", "aliases", "outdated"]
+        if k in ["bottle", "versions", "full_name", "aliases", "outdated", "linked_keg"]
             continue
         end
         if new_obj[k] != obj[k]
             warn("New JSON object doesn't agree with old in key \"$k\"; we screwed something up while translating $name")
+            warn("Original formula: $(obj[k])")
+            warn("Translated formula: $(new_obj[k])")
             delete_translated_formula(override_name; verbose=verbose)
             return name
         end
