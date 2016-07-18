@@ -6,11 +6,11 @@ Returns the string contents of a package's formula.
 function read_formula(pkg::StringOrPkg) end
 
 function read_formula(name::AbstractString)
-    return @compat readstring(formula_path(name))
+    return readstring(formula_path(name))
 end
 
 function read_formula(pkg::BrewPkg)
-    return @compat readstring(formula_path(pkg))
+    return readstring(formula_path(pkg))
 end
 
 """
