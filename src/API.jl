@@ -507,7 +507,9 @@ Remove packages `pkgs`, use `--force` if `force` == `true`
 """
 function rm{T<:StringOrPkg}(pkgs::Vector{T}; verbose::Bool=false, force::Bool=false)
     for pkg in pkgs
-        rm(pkg; verbose=verbose, force=force)
+        try
+            rm(pkg; verbose=verbose, force=force)
+        end
     end
 end
 
