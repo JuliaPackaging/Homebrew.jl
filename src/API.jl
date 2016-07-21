@@ -401,6 +401,11 @@ Please report these packages to https://github.com/JuliaLang/Homebrew.jl:
   $(join(non_relocatable, "\n  "))""")
     end
 
+    # Get list of outdated packages and remove them all
+    for dep in filter(pkg -> pkg.name in sorted_deps, Homebrew.outdated())
+        unlink(dep; verbose=verbose)
+    end
+
     # Install this package and all dependencies, in dependency order
     for dep in sorted_deps
         install_and_link(dep; verbose=verbose)
@@ -415,15 +420,16 @@ end
 """
 `install_and_link(pkg::Union{AbstractString,BrewPkg}; verbose=false)`
 
-Unlinks, installs, and links package `pkg`.  Used by `add()`.  Don't call
-manually unless you really know what you're doing, as this doesn't deal with
+Installs, and links package `pkg`.  Used by `add()`.  Don't call manually
+unless you really know what you're doing, as this doesn't deal with
 dependencies, and so can trigger compilation when you don't want it to.
 """
 function install_and_link(pkg::StringOrPkg; verbose::Bool=false) end
 
 function install_and_link(name::AbstractString; verbose::Bool=false)
+    # If we're already linked, don't sweat it.
     if linked(name)
-        unlink(name; verbose=verbose)
+        return
     end
 
     # Install dependency and link it
