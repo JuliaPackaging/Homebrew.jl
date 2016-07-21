@@ -199,7 +199,7 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
     # for a few important keys such as "bottle" and "full_name"
     for k in keys(new_obj)
         # Skip these keys, they always different
-        if k in ["bottle", "versions", "full_name", "aliases", "outdated", "linked_keg"]
+        if k in ["bottle", "versions", "full_name", "aliases", "outdated", "linked_keg", "installed"]
             continue
         end
         if new_obj[k] != obj[k]
