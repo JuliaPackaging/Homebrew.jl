@@ -16,6 +16,9 @@ end
 Homebrew.add("pkg-config")
 @test Homebrew.installed("pkg-config") == true
 
+# Print versioninfo() to boost coverage
+Homebrew.versioninfo()
+
 # Now show that we have it
 pkgconfig = Homebrew.info("pkg-config")
 version = readchomp(`pkg-config --version`)
