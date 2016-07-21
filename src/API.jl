@@ -569,3 +569,21 @@ function has_relocatable_bottle(name::AbstractString)
 
     return json(name)["bottle"]["stable"]["cellar"] in [":any", ":any_skip_relocation"]
 end
+
+function versioninfo(;verbose=false)
+    Base.versioninfo(verbose)
+    brew(`--version`)
+    installed_pkgs = list()
+    println("$(length(installed_pkgs)) total packages installed:")
+    println(join([x.name for x in installed_pkgs], ", "))
+    println()
+
+    translated_pkgs = filter(x -> x.tap == "staticfloat/juliatranslated", installed_pkgs)
+    println("$(length(translated_pkgs)) auto-translated packages installed:")
+    println(join([x.name for x in translated_pkgs], ", "))
+    println()
+
+    juliadeps_pkgs = filter(x -> x.tap == "staticfloat/juliadeps", installed_pkgs)
+    println("$(length(juliadeps_pkgs)) juliadeps packages installed:")
+    println(join([x.name for x in juliadeps_pkgs], ", "))
+end
