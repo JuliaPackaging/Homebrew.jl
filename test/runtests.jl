@@ -19,10 +19,18 @@ Homebrew.add("pkg-config")
 # Print versioninfo() to boost coverage
 Homebrew.versioninfo()
 
-# Now show that we have it
+# Now show that we have it and that it's the right version
+function strip_underscores(str)
+    range = rsearch(str, "_")
+    if range.start > 1
+        return str[1:range.start-1]
+    else
+        return str
+    end
+end
 pkgconfig = Homebrew.info("pkg-config")
 version = readchomp(`pkg-config --version`)
-@test version == pkgconfig.version
+@test version == strip_underscores(pkgconfig.version)
 @test Homebrew.installed(pkgconfig) == true
 info("$(pkgconfig) installed to: $(Homebrew.prefix(pkgconfig))")
 
