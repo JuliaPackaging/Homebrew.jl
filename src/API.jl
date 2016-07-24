@@ -253,7 +253,7 @@ function info(name::AbstractString)
 end
 
 """
-`direct_deps(pkg::Union{AbstractString,BrewPkg})`
+`direct_deps(pkg::Union{AbstractString,BrewPkg}; build_deps::Bool=false)`
 
 Return a list of all direct dependencies of `pkg` as a `Vector{BrewPkg}`
 If `build_deps` is `true` include formula depependencies marked as `:build`.
@@ -278,7 +278,7 @@ function direct_deps(pkg::BrewPkg; build_deps::Bool=false)
 end
 
 """
-`deps_tree(pkg::Union{AbstractString,BrewPkg})`
+`deps_tree(pkg::Union{AbstractString,BrewPkg}; build_deps::Bool=false)`
 
 Return a dictionary mapping every dependency (both direct and indirect) of `pkg`
 to a `Vector{BrewPkg}` of all of its dependencies.  Used in `deps_sorted()`.
