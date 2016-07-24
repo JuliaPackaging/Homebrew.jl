@@ -43,15 +43,15 @@ info("$(pkgconfig) installed to: $(Homebrew.prefix(pkgconfig))")
 @test Homebrew.linked(pkgconfig) == true
 
 # Test dependency inspection
-@test Homebrew.deps("pkg-config") == []
-@test Homebrew.deps(pkgconfig) == []
-@test Homebrew.deps("nettle") == [Homebrew.info("gmp")]
-@test Homebrew.deps(Homebrew.info("nettle")) == [Homebrew.info("gmp")]
+@test Homebrew.direct_deps("pkg-config") == []
+@test Homebrew.direct_deps(pkgconfig) == []
+@test Homebrew.direct_deps("nettle") == [Homebrew.info("gmp")]
+@test Homebrew.direct_deps(Homebrew.info("nettle")) == [Homebrew.info("gmp")]
 
 # Run through our sorted deps routines, ensuring that everything is sorted
 sortdeps = Homebrew.deps_sorted("pango")
 for idx in 1:length(sortdeps)
-    for dep in Homebrew.deps(sortdeps[idx])
+    for dep in Homebrew.direct_deps(sortdeps[idx])
         depidx = findfirst(x -> (x.name == dep.name), sortdeps)
         @test depidx != 0
         @test depidx < idx
@@ -73,8 +73,6 @@ info("Translation should pass:")
 @test Homebrew.translate_formula("gettext"; verbose=true) == "staticfloat/juliatranslated/gettext"
 info("Translation should fail because it has no bottles:")
 @test Homebrew.translate_formula("ack"; verbose=true) == "ack"
-info("Translation should fail because it is special-cased in staticfloat/juliadeps:")
-@test Homebrew.translate_formula("fontconfig"; verbose=true) == "staticfloat/juliadeps/fontconfig"
 
 # Make sure translation works properly with other taps
 Homebrew.delete_translated_formula("Homebrew/science/hdf5"; verbose=true)

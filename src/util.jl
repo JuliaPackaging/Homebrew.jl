@@ -26,6 +26,9 @@ function update_env()
     # user-maintained Homebrew installations, and multiple users can use it at once
     ENV["HOMEBREW_CACHE"] = joinpath(ENV["HOME"],"Library/Caches/Homebrew.jl/")
 
+    # We invoke `brew` a lot, let's disable automatic updates since we do those explicitly
+    ENV["HOMEBREW_NO_AUTO_UPDATE"] = "1"
+
     # If we have `git` installed from Homebrew, add its environment variables
     if isfile(joinpath(brew_prefix,"bin","git"))
         ENV["GIT_EXEC_PATH"] = joinpath(brew_prefix,"opt","git","libexec","git-core")

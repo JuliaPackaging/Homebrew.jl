@@ -253,39 +253,45 @@ function info(name::AbstractString)
 end
 
 """
-`deps(pkg::Union{AbstractString,BrewPkg})`
+`direct_deps(pkg::Union{AbstractString,BrewPkg}; build_deps::Bool=false)`
 
 Return a list of all direct dependencies of `pkg` as a `Vector{BrewPkg}`
+If `build_deps` is `true` include formula depependencies marked as `:build`.
 """
-function deps(pkg::StringOrPkg) end
+function direct_deps(pkg::StringOrPkg; build_deps::Bool=false) end
 
-function deps(name::AbstractString)
+function direct_deps(name::AbstractString; build_deps::Bool=false)
     obj = json(name)
 
     # Iterate over all dependencies, removing optional and build dependencies
     dependencies = String[dep for dep in obj["dependencies"]]
     dependencies = filter(x -> !(x in obj["optional_dependencies"]), dependencies)
-    dependencies = filter(x -> !(x in obj["build_dependencies"]), dependencies)
+
+    if !build_deps
+        dependencies = filter(x -> !(x in obj["build_dependencies"]), dependencies)
+    end
     return info(dependencies)
 end
 
-function deps(pkg::BrewPkg)
-    return deps(fullname(pkg))
+function direct_deps(pkg::BrewPkg; build_deps::Bool=false)
+    return direct_deps(fullname(pkg); build_deps=build_deps)
 end
 
 """
-`deps_tree(pkg::Union{AbstractString,BrewPkg})`
+`deps_tree(pkg::Union{AbstractString,BrewPkg}; build_deps::Bool=false)`
 
 Return a dictionary mapping every dependency (both direct and indirect) of `pkg`
 to a `Vector{BrewPkg}` of all of its dependencies.  Used in `deps_sorted()`.
-"""
-function deps_tree(pkg::StringOrPkg) end
 
-function deps_tree(name::AbstractString)
+If `build_deps` is `true` include formula depependencies marked as `:build`.
+"""
+function deps_tree(pkg::StringOrPkg; build_deps::Bool=false) end
+
+function deps_tree(name::AbstractString; build_deps::Bool=false)
     # First, get all the knowledge we need about dependencies
     deptree = Dict{String,Vector{BrewPkg}}()
 
-    pending_deps = deps(name)
+    pending_deps = direct_deps(name; build_deps=build_deps)
     completed_deps = Set(String[])
     while !isempty(pending_deps)
         # Temporarily move pending_deps over to curr_pending_deps
@@ -294,7 +300,7 @@ function deps_tree(name::AbstractString)
 
         # Iterate over these currently pending deps, adding new ones to pending_deps
         for pkg in curr_pending_deps
-            deptree[fullname(pkg)] = deps(pkg)
+            deptree[fullname(pkg)] = direct_deps(pkg; build_deps=build_deps)
             push!(completed_deps, fullname(pkg))
             for dpkg in deptree[fullname(pkg)]
                 if !(fullname(dpkg) in completed_deps)
@@ -307,8 +313,8 @@ function deps_tree(name::AbstractString)
     return deptree
 end
 
-function deps_tree(pkg::BrewPkg)
-    return deps_tree(fullname(pkg))
+function deps_tree(pkg::BrewPkg; build_deps::Bool=false)
+    return deps_tree(fullname(pkg); build_deps=build_deps)
 end
 
 """
@@ -348,15 +354,17 @@ function insert_after_dependencies(tree::Dict, sorted_deps::Vector{BrewPkg}, nam
 end
 
 """
-`deps_sorted(pkg::Union{AbstractString,BrewPkg})`
+`deps_sorted(pkg::Union{AbstractString,BrewPkg}; build_deps::Bool)`
 
 Return a sorted `Vector{BrewPkg}` of all dependencies (direct and indirect) such
 that each entry in the list appears after all of its own dependencies.
-"""
-function deps_sorted(pkg::StringOrPkg) end
 
-function deps_sorted(name::AbstractString)
-    tree = deps_tree(name)
+If `build_deps` is `true` include formula depependencies marked as `:build`.
+"""
+function deps_sorted(pkg::StringOrPkg; build_deps::Bool=false) end
+
+function deps_sorted(name::AbstractString; build_deps::Bool=false)
+    tree = deps_tree(name; build_deps=build_deps)
     sorted_deps = BrewPkg[]
 
     # For each package in the tree, insert it only after all of its dependencies
@@ -369,8 +377,8 @@ function deps_sorted(name::AbstractString)
     return sorted_deps
 end
 
-function deps_sorted(pkg::BrewPkg)
-    return deps_sorted(fullname(pkg))
+function deps_sorted(pkg::BrewPkg; build_deps::Bool=false)
+    return deps_sorted(fullname(pkg); build_deps=build_deps)
 end
 
 """
@@ -384,9 +392,21 @@ and forcing `cellar :any` into the formulae.
 function add(pkg::StringOrPkg; verbose::Bool=false) end
 
 function add(name::AbstractString; verbose::Bool=false)
-    # Begin by translating `name` and all dependencies
+    # Begin by translating all dependencies of `name`, including :build deps.
+    # We need to translate :build deps so that we don't run into the diamond of death
+    sorted_deps = AbstractString[]
+    runtime_deps = deps_sorted(name)
+    for dep in deps_sorted(name; build_deps=true)
+        translated_dep = translate_formula(dep; verbose=verbose)
+
+        # Collecft the translated runtime_deps into sorted_deps
+        if dep in runtime_deps
+            push!(sorted_deps, translated_dep)
+        end
+    end
+
+    # Translate the actual formula we're interested in
     name = translate_formula(name; verbose=verbose)
-    sorted_deps = [translate_formula(dep; verbose=verbose) for dep in deps_sorted(name)]
 
     # Push `name` onto the end of `sorted_deps` so we have one list of things to install
     push!(sorted_deps, name)
@@ -590,8 +610,4 @@ function versioninfo(;verbose=false)
     println("$(length(translated_pkgs)) auto-translated packages installed:")
     println(join([x.name for x in translated_pkgs], ", "))
     println()
-
-    juliadeps_pkgs = filter(x -> x.tap == "staticfloat/juliadeps", installed_pkgs)
-    println("$(length(juliadeps_pkgs)) juliadeps packages installed:")
-    println(join([x.name for x in juliadeps_pkgs], ", "))
 end
