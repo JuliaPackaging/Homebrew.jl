@@ -191,13 +191,13 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
             if verbose
                 println("translation: replacing dependency $dep_name because it's been translated before")
             end
-            new_name = tapname * dep_name
+            new_name = "$(auto_tapname)/$(dep_name)"
             offset = m.offsets[1]
 
             start_idx = offset-1+adjustment
             stop_idx = offset+length(dep_name)+adjustment
             formula = formula[1:start_idx] * new_name * formula[stop_idx:end]
-            adjustment += length(tapname)
+            adjustment += length(auto_tapname)
         end
     end
 
