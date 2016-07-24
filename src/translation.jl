@@ -106,9 +106,10 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
         # Bail if there is an overriding formula in our manually-curated tap
         if isfile(joinpath(tappath, "$(name).rb"))
             if verbose
-                println("translation: bailing because $name is already available in tap $tapname")
+                println("translation: using $tapname/$name for the source of our translation")
             end
-            return joinpath(tapname, path)
+            tap_path = tapname
+            name = "$(tap_path)/$(path)"
         end
     else
         # If we explicitly asked for a tap, then make sure it's here!
@@ -119,14 +120,6 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
     if !has_bottle(name)
         if verbose
             println("translation: bailing because $name has no bottles")
-        end
-        return name
-    end
-
-    # Bail if the bottle is actually cellar: any
-    if has_relocatable_bottle(name)
-        if verbose
-            println("translation: bailing because $name is already relocatable")
         end
         return name
     end
@@ -183,7 +176,30 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
 
     # Resynthesize the bottle stanza and embed it into `formula` once more
     bottle_stanza = join(bottle_lines, "\n")
-    formula = formula[1:m.offset] * bottle_stanza * formula[m.offset+length(m.match):end]
+    formula = formula[1:m.offset-1] * bottle_stanza * formula[m.offset+length(m.match):end]
+
+    # Find any depends_on lines, substitute in any translated formulae
+    adjustment = 0
+    for m in eachmatch(r"depends_on\s+\"([^ ]+)\"", formula)
+        # This is the path that this dependency would have if it has been translated
+        dep_name = m.captures[1]
+        auto_dep_path = joinpath(auto_tappath, "$(dep_name).rb")
+
+        # If this dependency has been translated, then prepend "staticfloat/juliatranslated"
+        # to it in the formula, so there is no confusion inside of Homebrew
+        if isfile(auto_dep_path)
+            if verbose
+                println("translation: replacing dependency $dep_name because it's been translated before")
+            end
+            new_name = tapname * dep_name
+            offset = m.offsets[1]
+
+            start_idx = offset-1+adjustment
+            stop_idx = offset+length(dep_name)+adjustment
+            formula = formula[1:start_idx] * new_name * formula[stop_idx:end]
+            adjustment += length(tapname)
+        end
+    end
 
     # Write our patched formula out to our override tap
     write_formula(override_name, formula)
@@ -193,22 +209,6 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
     if !has_relocatable_bottle(override_name)
         warn("New formula $override_name doesn't have a relocatable bottle despite our meddling")
         return name
-    end
-
-    # Compare the two json objects; they should be equal to eachother, except
-    # for a few important keys such as "bottle" and "full_name"
-    for k in keys(new_obj)
-        # Skip these keys, they always different
-        if k in ["bottle", "versions", "full_name", "aliases", "outdated", "linked_keg", "installed"]
-            continue
-        end
-        if new_obj[k] != obj[k]
-            warn("New JSON object doesn't agree with old in key \"$k\"; we screwed something up while translating $name")
-            warn("Original formula: $(obj[k])")
-            warn("Translated formula: $(new_obj[k])")
-            delete_translated_formula(override_name; verbose=verbose)
-            return name
-        end
     end
 
     # Wow.  We actually did it.
