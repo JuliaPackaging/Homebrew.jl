@@ -197,7 +197,7 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
             start_idx = offset-1+adjustment
             stop_idx = offset+length(dep_name)+adjustment
             formula = formula[1:start_idx] * new_name * formula[stop_idx:end]
-            adjustment += length(auto_tapname)
+            adjustment += length(auto_tapname) + 1
         end
     end
 
