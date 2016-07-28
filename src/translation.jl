@@ -171,7 +171,14 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
     # Add a "cellar :any" and "root_url" line to this formula just after the
     # `bottle do`.  Note that since `match()` returns  SubString's, we need to
     # explicitly convert our string to SubString; this should be fixed in 0.6
-    insert!(bottle_lines, bottle_idx+1, SubString("    cellar :any",1))
+
+    # We should, however, preserve :any_skip_relocation if that is what this
+    # bottle is marked as, which includes important bottles such as `cctools`.
+    if contains(m.match, ":any_skip_relocation")
+        insert!(bottle_lines, bottle_idx+1, SubString("    cellar :any_skip_relocation",1))
+    else
+        insert!(bottle_lines, bottle_idx+1, SubString("    cellar :any",1))
+    end
     insert!(bottle_lines, bottle_idx+1, SubString("    root_url \"$(obj["bottle"]["stable"]["root_url"])\"",1))
 
     # Resynthesize the bottle stanza and embed it into `formula` once more
