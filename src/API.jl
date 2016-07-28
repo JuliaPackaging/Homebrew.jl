@@ -545,13 +545,35 @@ end
 
 Runs `brew tap \$tap_name` if the tap does not already exist.  If `full` is `true`
 adds the flag `--full` to clone a full tap instead of Homebrew's default shallow.
+
+If `git` is not available, manually tap it with curl and tar.  This tap will be
+unshallowed at the next `brew update` when `git` is available.
 """
 function tap(tap_name::AbstractString; full::Bool=true, verbose::Bool=false)
     if !tap_exists(tap_name)
-        if full
-            brew(`tap --full $tap_name`; verbose=verbose)
+        # If we have no git available, then do it oldschool style
+        if !git_installed()
+            user = dirname(tap_name)
+            repo = "homebrew-$(basename(tap_name))"
+            tarball_url = "https://github.com/$user/$repo/tarball/master"
+            tap_path = joinpath(brew_prefix,"Library","Taps", user, repo)
+
+            if verbose
+                Base.info("Manually tapping $tap_name...")
+            end
+            try
+                mkpath(tap_path)
+                @compat run(pipeline(`curl -# -L $tarball_url`, `tar xz -m --strip 1 -C $tap_path`))
+            catch
+                warn("Could not download/extract $tarball_url into $(tap_path)!")
+                rethrow()
+            end
         else
-            brew(`tap $tap_name`; verbose=verbose)
+            if full
+                brew(`tap --full $tap_name`; verbose=verbose)
+            else
+                brew(`tap $tap_name`; verbose=verbose)
+            end
         end
     end
 end
