@@ -1,4 +1,4 @@
 julia 0.3
 BinDeps
 JSON
-Compat 0.7.16
+Compat 0.7.20

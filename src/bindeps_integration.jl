@@ -13,7 +13,7 @@ show(io::IO, hb::HB) = write(io, "Homebrew Bottles ",
 
 
 # Only return true on Darwin platforms
-can_use(::Type{HB}) = OS_NAME == :Darwin
+can_use(::Type{HB}) = Compat.KERNEL == :Darwin
 
 function package_available(p::HB)
     !can_use(HB) && return false
