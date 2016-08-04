@@ -392,6 +392,10 @@ and forcing `cellar :any` into the formulae.
 function add(pkg::StringOrPkg; verbose::Bool=false) end
 
 function add(name::AbstractString; verbose::Bool=false)
+    # We do this so that things are as unambiguous and fresh as possible.
+    # It's not a bad situation because translation is very fast.
+    delete_all_translated_formulae()
+
     # Begin by translating all dependencies of `name`, including :build deps.
     # We need to translate :build deps so that we don't run into the diamond of death
     sorted_deps = AbstractString[]
@@ -399,7 +403,7 @@ function add(name::AbstractString; verbose::Bool=false)
     for dep in deps_sorted(name; build_deps=true)
         translated_dep = translate_formula(dep; verbose=verbose)
 
-        # Collecft the translated runtime_deps into sorted_deps
+        # Collect the translated runtime_deps into sorted_deps
         if dep in runtime_deps
             push!(sorted_deps, translated_dep)
         end
