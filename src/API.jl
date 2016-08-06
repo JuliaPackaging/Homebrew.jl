@@ -170,6 +170,14 @@ function json{T<:AbstractString}(names::Vector{T})
 
     # Now ask for all these names if we have any
     if !isempty(ask_names)
+        # Tap the necessary tap for each name we're asking about, if there is one
+        for name in ask_names
+            path, tap_path = formula_tap(name)
+
+            if !isempty(tap_path)
+                tap(tap_path)
+            end
+        end
         try
             jdata = JSON.parse(brewchomp(Cmd(String["info", "--json=v1", ask_names...])))
             for idx in 1:length(jdata)
