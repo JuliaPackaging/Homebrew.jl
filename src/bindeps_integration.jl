@@ -25,14 +25,6 @@ function package_available(p::HB)
     # For each package, see if we can get info about it.  If not, fail out
     for pkg in pkgs
         try
-            # First, tap the package if we need to
-            path, tap_path = formula_tap(pkg)
-
-            if !isempty(tap_path)
-                tap(tap_path)
-            end
-
-            # Next, ask for info on that package
             info(pkg)
         catch
             return false

@@ -170,6 +170,14 @@ function json{T<:AbstractString}(names::Vector{T})
 
     # Now ask for all these names if we have any
     if !isempty(ask_names)
+        # Tap the necessary tap for each name we're asking about, if there is one
+        for name in ask_names
+            path, tap_path = formula_tap(name)
+
+            if !isempty(tap_path)
+                tap(tap_path)
+            end
+        end
         try
             jdata = JSON.parse(brewchomp(Cmd(String["info", "--json=v1", ask_names...])))
             for idx in 1:length(jdata)
@@ -382,19 +390,24 @@ function deps_sorted(pkg::BrewPkg; build_deps::Bool=false)
 end
 
 """
-`add(pkg::Union{AbstractString,BrewPkg}; verbose::Bool=false)`
+`add(pkg::Union{AbstractString,BrewPkg}; verbose::Bool=false, keep_translations::Bool=false)`
 
 Install package `pkg` and all dependencies, using bottles only, unlinking any
 previous versions if necessary, and linking the new ones in place. Will attempt
 to install non-relocatable bottles from `Homebrew/core` by translating formulae
 and forcing `cellar :any` into the formulae.
-"""
-function add(pkg::StringOrPkg; verbose::Bool=false) end
 
-function add(name::AbstractString; verbose::Bool=false)
+Automatically deletes all translated formulae before adding formulae and after,
+unless `keep_translations` is set to `true`.
+"""
+function add(pkg::StringOrPkg; verbose::Bool=false, keep_translations::Bool=false) end
+
+function add(name::AbstractString; verbose::Bool=false, keep_translations::Bool=false)
     # We do this so that things are as unambiguous and fresh as possible.
     # It's not a bad situation because translation is very fast.
-    delete_all_translated_formulae()
+    if !keep_translations
+        delete_all_translated_formulae()
+    end
 
     # Begin by translating all dependencies of `name`, including :build deps.
     # We need to translate :build deps so that we don't run into the diamond of death
@@ -434,10 +447,15 @@ Please report these packages to https://github.com/JuliaLang/Homebrew.jl:
     for dep in sorted_deps
         install_and_link(dep; verbose=verbose)
     end
+
+    # Cleanup translated formula once we're done, unless asked not to
+    if !keep_translations
+        delete_all_translated_formulae()
+    end
 end
 
-function add(pkg::BrewPkg; verbose::Bool=false)
-    add(fullname(pkg), verbose=verbose)
+function add(pkg::BrewPkg; verbose::Bool=false, keep_translations::Bool=false)
+    add(fullname(pkg); verbose=verbose, keep_translations=keep_translations)
 end
 
 
