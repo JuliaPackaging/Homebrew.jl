@@ -113,7 +113,7 @@ function formula_path(name::AbstractString)
     path, tap_path = formula_tap(name)
 
     if isempty(tap_path)
-        return joinpath(brew_prefix, "Library", "Formula", "$path.rb")
+        return joinpath(brew_prefix, "Library", "Taps", "homebrew", "homebrew-core", "Formula", "$path.rb")
     else
         # Insert the "homebrew-" that exists in all taps
         tap_path = "$(dirname(tap_path))/homebrew-$(basename(tap_path))"
