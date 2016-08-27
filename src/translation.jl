@@ -101,6 +101,20 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
 
     path, tap_path = formula_tap(name)
 
+    # We maintain a list of formulae that we WILL NOT translate. As an example,
+    # 'xz' is automatically added as a dependency by Homebrew when a formula
+    # has a `.tar.xz` source tarball.  This cannot be redirected to the
+    # `staticfloat/juliatranslated` tap, causing diamonds of death where we have
+    # the potential for both `xz` and `staticfloat/juliatranslated/xz` to
+    # be in the dependency tree for a formula.
+    translation_blacklist = ["xz"]
+    if basename(name) in translation_blacklist
+        if verbose
+            println("translation: bailing because $name is in the translation blacklist")
+        end
+        return name
+    end
+
     # Did we ask for any old name, or did we explicitly request a tap?
     if isempty(tap_path)
         # Bail if there is an overriding formula in our manually-curated tap
