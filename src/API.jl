@@ -45,12 +45,12 @@ end
 Runs `brew update` to update Homebrew itself and all taps.  Then runs `upgrade()`
 to upgrade all formulae that have fallen out of date.
 """
-function update()
+function update(;verbose=false)
     # Just run `brew update`
     brew(`update`)
 
     # Finally, upgrade outdated packages.
-    upgrade()
+    upgrade(;verbose=verbose)
 end
 
 """
@@ -133,11 +133,11 @@ and adding a new one.  Note that we do not simply call `brew upgrade` here, as
 we have special logic inside of `add()` to install from our tap before trying to
 install from mainline Homebrew.
 """
-function upgrade()
+function upgrade(;verbose=false)
     # We have to manually upgrade each package, as `brew upgrade` will pull from mxcl/master
     for pkg in outdated()
-        rm(pkg)
-        add(pkg)
+        rm(pkg; verbose=verbose)
+        add(pkg; verbose=verbose)
     end
 end
 
