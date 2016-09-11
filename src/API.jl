@@ -40,12 +40,12 @@ function brewchomp(cmd::Cmd; no_stderr=false, no_stdout=false, verbose::Bool=fal
 end
 
 """
-`update()`
+`update(;verbose::Bool=false)`
 
 Runs `brew update` to update Homebrew itself and all taps.  Then runs `upgrade()`
 to upgrade all formulae that have fallen out of date.
 """
-function update(;verbose=false)
+function update(;verbose::Bool=false)
     # Just run `brew update`
     brew(`update`)
 
@@ -126,14 +126,14 @@ function refresh!(;verbose=false)
 end
 
 """
-`upgrade()`
+`upgrade(;verbose::Bool=false)`
 
 Iterate over all packages returned from `outdated()`, removing the old version
 and adding a new one.  Note that we do not simply call `brew upgrade` here, as
 we have special logic inside of `add()` to install from our tap before trying to
 install from mainline Homebrew.
 """
-function upgrade(;verbose=false)
+function upgrade(;verbose::Bool=false)
     # We have to manually upgrade each package, as `brew upgrade` will pull from mxcl/master
     for pkg in outdated()
         rm(pkg; verbose=verbose)
