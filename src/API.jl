@@ -644,9 +644,9 @@ end
 
 function versioninfo(;verbose=false)
     Base.versioninfo(verbose)
-    Base.Git.run(`log -1 '--pretty=format:Homebrew git revision %h; last commit %cr'`; dir=joinpath(prefix()))
-    Base.Git.run(`log -1 '--pretty=format:homebrew/core git revision %h; last commit %cr'`; dir=joinpath(prefix(), "Library", "Taps", "homebrew", "homebrew-core"))
-    Base.Git.run(`log -1 '--pretty=format:staticfloat/juliadeps revision %h; last commit %cr'`; dir=joinpath(prefix(), "Library", "Taps", "staticfloat", "homebrew-juliadeps"))
+    run(Cmd(`git log -1 '--pretty=format:Homebrew git revision %h; last commit %cr'`; dir=joinpath(prefix())))
+    run(Cmd(`git log -1 '--pretty=format:homebrew/core git revision %h; last commit %cr'`; dir=joinpath(prefix(), "Library", "Taps", "homebrew", "homebrew-core")))
+    run(Cmd(`git log -1 '--pretty=format:staticfloat/juliadeps revision %h; last commit %cr'`; dir=joinpath(prefix(), "Library", "Taps", "staticfloat", "homebrew-juliadeps")))
 
     installed_pkgs = list()
     println("\n$(length(installed_pkgs)) total packages installed:")
