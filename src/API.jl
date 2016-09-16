@@ -644,14 +644,11 @@ end
 
 function versioninfo(;verbose=false)
     Base.versioninfo(verbose)
-    brew(`--version`)
-    installed_pkgs = list()
-    println("$(length(installed_pkgs)) total packages installed:")
-    println(join([x.name for x in installed_pkgs], ", "))
-    println()
+    Base.Git.run(`log -1 '--pretty=format:Homebrew git revision %h; last commit %cr'`; dir=joinpath(prefix()))
+    Base.Git.run(`log -1 '--pretty=format:homebrew/core git revision %h; last commit %cr'`; dir=joinpath(prefix(), "Library", "Taps", "homebrew", "homebrew-core"))
+    Base.Git.run(`log -1 '--pretty=format:staticfloat/juliadeps revision %h; last commit %cr'`; dir=joinpath(prefix(), "Library", "Taps", "staticfloat", "homebrew-juliadeps"))
 
-    translated_pkgs = filter(x -> x.tap == "staticfloat/juliatranslated", installed_pkgs)
-    println("$(length(translated_pkgs)) auto-translated packages installed:")
-    println(join([x.name for x in translated_pkgs], ", "))
-    println()
+    installed_pkgs = list()
+    println("\n$(length(installed_pkgs)) total packages installed:")
+    println(join([x.name for x in installed_pkgs], ", "))
 end
