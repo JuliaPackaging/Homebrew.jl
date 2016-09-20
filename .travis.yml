@@ -1,15 +1,10 @@
 language: julia
-matrix:
-    include:
-        - os: osx
-          osx_image: xcode7.3
-          julia: 0.4
-        - os: osx
-          osx_image: xcode7.3
-          julia: 0.5
-        - os: osx
-          osx_image: xcode7.3
-          julia: nightly
+os: osx
+osx_image: xcode7.3
+julia:
+    - 0.4
+    - 0.5
+    - nightly
 notifications:
     email: false
 after_success:
