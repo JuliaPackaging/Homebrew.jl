@@ -108,6 +108,7 @@ Homebrew.delete_all_translated_formulae(verbose=true)
 # Test deletion as well, showing that the array-argument form continues on after errors
 Homebrew.rm(pkgconfig)
 Homebrew.add(pkgconfig)
+info("rm() should fail because this isn't actually a package name:")
 Homebrew.rm(["thisisntapackagename", "pkg-config"])
 @test Homebrew.installed("pkg-config") == false
 @test Homebrew.linked("pkg-config") == false
