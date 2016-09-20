@@ -94,7 +94,7 @@ all files installed by this package have been linked into the global prefix.
 function linked(pkg::StringOrPkg) end
 
 function linked(name::AbstractString)
-    return islink(joinpath(brew_prefix,"Library","LinkedKegs",basename(name)))
+    return islink(joinpath(brew_prefix,"var","homebrew","linked",basename(name)))
 end
 
 function linked(pkg::BrewPkg)
