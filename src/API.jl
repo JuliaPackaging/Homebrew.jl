@@ -70,7 +70,8 @@ Returns the prefix for a particular package's latest installed version.
 function prefix(pkg::StringOrPkg) end
 
 function prefix(name::AbstractString)
-    return joinpath(brew_prefix, "Cellar", name, info(name).version)
+    path, tap_path = formula_tap(name)
+    return joinpath(brew_prefix, "Cellar", path, info(name).version)
 end
 
 function prefix(pkg::BrewPkg)
