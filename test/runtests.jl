@@ -82,6 +82,10 @@ info("Translation should fail because hdf5 has already been translated:")
 # Do it a second time so we can get coverage of practicing that particular method of bailing out
 Homebrew.translate_formula(Homebrew.info("Homebrew/science/hdf5"); verbose=true)
 
+# Now that we have homebrew/science installed, test to make sure that prefix() works
+# with taps properly:
+@test Homebrew.prefix("metis4") == Homebrew.prefix("homebrew/science/metis4")
+
 # Test more miscellaneous things
 fontconfig = Homebrew.info("staticfloat/juliadeps/fontconfig")
 @test Homebrew.formula_path(fontconfig) == joinpath(Homebrew.tappath, "fontconfig.rb")
