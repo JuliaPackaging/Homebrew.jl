@@ -37,7 +37,7 @@ properly so that packages being installed can find their binaries.
 """
 function __init__()
     # Let's see if Homebrew is installed.  If not, let's do that first!
-    install_brew()
+    isdir(brew_prefix) || install_brew()
 
     # Update environment variables such as PATH, DL_LOAD_PATH, etc...
     update_env()
