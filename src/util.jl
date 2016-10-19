@@ -29,6 +29,11 @@ function update_env()
     # We invoke `brew` a lot, let's disable automatic updates since we do those explicitly
     ENV["HOMEBREW_NO_AUTO_UPDATE"] = "1"
 
+    # We opt out of analytics by default
+    if !("HOMEBREW_NO_ANALYTICS" in keys(ENV))
+        ENV["HOMEBREW_NO_ANALYTICS"] = "1"
+    end
+
     # If we have `git` installed from Homebrew, add its environment variables
     if isfile(joinpath(brew_prefix,"bin","git"))
         ENV["GIT_EXEC_PATH"] = joinpath(brew_prefix,"opt","git","libexec","git-core")
