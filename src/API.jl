@@ -476,7 +476,7 @@ function install_and_link(name::AbstractString; verbose::Bool=false)
     end
 
     # Install dependency and link it
-    brew(`install $name`; verbose=verbose)
+    brew(`install --ignore-dependencies $name`; verbose=verbose)
     link(name; verbose=verbose)
 end
 

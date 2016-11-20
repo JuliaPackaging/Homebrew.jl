@@ -15,7 +15,7 @@ ourselves from other Homebrew installations so we don't conflict with anyone
 """
 function update_env()
     if isempty(Base.search(ENV["PATH"], joinpath(brew_prefix, "bin")))
-        ENV["PATH"] = "$(realpath(joinpath(brew_prefix, "bin"))):$(joinpath(brew_prefix, "sbin")):$(ENV["PATH"])"
+        ENV["PATH"] = "$(realpath(joinpath(brew_prefix, "bin"))):$(realpath(joinpath(brew_prefix, "sbin"))):$(ENV["PATH"])"
     end
 
     if !(joinpath(brew_prefix,"lib") in DL_LOAD_PATH)
