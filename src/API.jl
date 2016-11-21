@@ -413,14 +413,24 @@ function add(name::AbstractString; verbose::Bool=false, keep_translations::Bool=
     # Begin by translating all dependencies of `name`, including :build deps.
     # We need to translate :build deps so that we don't run into the diamond of death
     sorted_deps = AbstractString[]
-    runtime_deps = deps_sorted(name)
+    build_deps_only = AbstractString[]
+    runtime_deps = [x.name for x in deps_sorted(name)]
+    if verbose
+        println("runtime_deps: $runtime_deps")
+    end
     for dep in deps_sorted(name; build_deps=true)
         translated_dep = translate_formula(dep; verbose=verbose)
 
         # Collect the translated runtime_deps into sorted_deps
-        if dep in runtime_deps
+        if dep.name in runtime_deps
             push!(sorted_deps, translated_dep)
+        else
+            push!(build_deps_only, translated_dep)
         end
+    end
+    if verbose
+        println("sorted_deps: $sorted_deps")
+        println("build_deps only: $build_deps_only")
     end
 
     # Translate the actual formula we're interested in
