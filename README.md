@@ -66,3 +66,21 @@ Some of the formulae in the [staticfloat/juliadeps tap](https://github.com/stati
 Users can modify Homebrew's internal workings, so it's better to have a known good Homebrew installation than to risk bug reports from users that have unknowingly merged patches into Homebrew that break functionality we require.
 
 If you already have something installed, and it is usable, (e.g. `BinDeps` can load it and it passes any quick internal tests the Package authors have defined) then `Homebrew.jl` won't try to install it. `BinDeps` always checks to see if there is a library in the current load path that satisfies the requirements setup by package authors, and if there is, it doesn't build anything.
+
+
+## Advanced usage
+
+`Homebrew.jl` provides a convenient wrapper around most of the functionality of Homebrew, however there are rare cases where access to the full suite of `brew` commands is necessary.  To facilitate this, users that are familiar with the `brew` command set can use `Homebrew.brew()` to directly feed commands to the `brew` binary within `Homebrew.jl`.  Example usage:
+
+```
+julia> using Homebrew
+
+julia> Homebrew.brew(`info staticfloat/juliadeps/libgfortran`)
+staticfloat/juliadeps/libgfortran: stable 6.2 (bottled)
+http://gcc.gnu.org/wiki/GFortran
+/Users/sabae/.julia/v0.5/Homebrew/deps/usr/Cellar/libgfortran/6.2 (9 files, 2M) *
+  Poured from bottle on 2016-11-21 at 13:14:33
+From: https://github.com/staticfloat/homebrew-juliadeps/blob/master/libgfortran.rb
+==> Dependencies
+Build: gcc ✘
+```
