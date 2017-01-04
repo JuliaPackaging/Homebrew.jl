@@ -552,7 +552,7 @@ Remove package `pkg`, use `--force` if `force` == `true`
 function rm(pkg::StringOrPkg; verbose::Bool=false, force::Bool=false) end
 
 function rm(pkg::AbstractString; verbose::Bool=false, force=true)
-    brew(`rm $pkg`; verbose=verbose, force=force)
+    brew(`rm --ignore-dependencies $pkg`; verbose=verbose, force=force)
 end
 
 function rm(pkg::BrewPkg; verbose::Bool=false, force::Bool=true)
