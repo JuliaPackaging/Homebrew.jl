@@ -572,6 +572,15 @@ function rm{T<:StringOrPkg}(pkgs::Vector{T}; verbose::Bool=false, force::Bool=fa
     end
 end
 
+"""
+`cleanup()`
+
+Cleans up old installed versions of formulae, as well as purging all downloaded bottles
+"""
+function cleanup()
+    brew(`cleanup -s`)
+end
+
 
 """
 `tap(tap_name::AbstractString; full::Bool=true, verbose::Bool=false)`
