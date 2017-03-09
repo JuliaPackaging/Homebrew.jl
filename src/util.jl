@@ -29,6 +29,9 @@ function update_env()
     # We invoke `brew` a lot, let's disable automatic updates since we do those explicitly
     ENV["HOMEBREW_NO_AUTO_UPDATE"] = "1"
 
+    # Simultaneously, we want Homebrew to always update whenever we tell it to.
+    ENV["HOMEBREW_UPDATE_FORCE"] = "1"
+
     # We opt out of analytics by default
     if !("HOMEBREW_NO_ANALYTICS" in keys(ENV))
         ENV["HOMEBREW_NO_ANALYTICS"] = "1"
