@@ -47,7 +47,7 @@ to upgrade all formulae that have fallen out of date.
 """
 function update(;verbose::Bool=false)
     # Just run `brew update`
-    brew(`update`)
+    brew(`update`; force=true, verbose=verbose)
 
     # Finally, upgrade outdated packages.
     upgrade(;verbose=verbose)
