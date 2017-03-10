@@ -6,6 +6,7 @@ info("Using Homebrew.jl installed to $(Homebrew.prefix())")
 
 # Restore pkg-config to its installed (or non-installed) state at the end of all of this
 pkg_was_installed = Homebrew.installed("pkg-config")
+hdf_was_installed = Homebrew.installed("homebrew/science/hdf5")
 
 if pkg_was_installed
     info("Removing pkg-config for our testing...")
@@ -74,6 +75,11 @@ info("Translation should pass:")
 info("Translation should fail because it has no bottles:")
 @test Homebrew.translate_formula("ack"; verbose=true) == "ack"
 
+if hdf_was_installed
+    # Remove hdf5 before we start messing around with it
+    Homebrew.rm("homebrew/science/hdf5"; force=true)
+end
+
 # Make sure translation works properly with other taps
 Homebrew.delete_translated_formula("Homebrew/science/hdf5"; verbose=true)
 info("Translation should pass because we just deleted hdf5 from translation cache:")
@@ -84,6 +90,10 @@ Homebrew.translate_formula(Homebrew.info("Homebrew/science/hdf5"); verbose=true)
 
 # Test that installation of a formula from a tap when it's already been translated works
 Homebrew.add("Homebrew/science/hdf5"; verbose=true)
+
+if !hdf_was_installed
+    Homebrew.rm("Homebrew/science/hdf5")
+end
 
 # Now that we have homebrew/science installed, test to make sure that prefix() works
 # with taps properly:
