@@ -29,6 +29,10 @@ function update_env()
     # We invoke `brew` a lot, let's disable automatic updates since we do those explicitly
     ENV["HOMEBREW_NO_AUTO_UPDATE"] = "1"
 
+    # Stay on the latest version of Homebrew (get rid of this once we've solved
+    # https://github.com/JuliaPackaging/Homebrew.jl/issues/180)
+    ENV["HOMEBREW_DEVELOPER"] = "1"
+
     # We opt out of analytics by default
     if !("HOMEBREW_NO_ANALYTICS" in keys(ENV))
         ENV["HOMEBREW_NO_ANALYTICS"] = "1"
