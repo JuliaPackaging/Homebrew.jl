@@ -82,6 +82,9 @@ info("Translation should fail because hdf5 has already been translated:")
 # Do it a second time so we can get coverage of practicing that particular method of bailing out
 Homebrew.translate_formula(Homebrew.info("Homebrew/science/hdf5"); verbose=true)
 
+# Test that installation of a formula from a tap when it's already been translated works
+Homebrew.add("Homebrew/science/hdf5"; verbose=true)
+
 # Now that we have homebrew/science installed, test to make sure that prefix() works
 # with taps properly:
 @test Homebrew.prefix("metis4") == Homebrew.prefix("homebrew/science/metis4")
