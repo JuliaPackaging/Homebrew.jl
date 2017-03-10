@@ -15,6 +15,7 @@ const auto_tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebr
 # Where we download brew from
 const BREW_URL = "https://github.com/Homebrew/brew"
 const BREW_BRANCH = "master"
+const BREW_STABLE_SHA = "b38c52f930ad5736518dff54f135674347a4a222"
 
 """
 `install_brew()`
@@ -54,7 +55,11 @@ function install_brew()
         # If we don't have a git available, install it now
         add("git")
     end
-    return
+
+    # Update immediately so that we get onto our "stable" tag
+    update()
+
+    return nothing
 end
 
 """
@@ -123,4 +128,23 @@ end
 
 function formula_path(pkg::BrewPkg)
     return formula_path(fullname(pkg))
+end
+
+
+"""
+`update_tag()`
+
+We maintain our own "stable" tag that overrides Homebrew so that we can
+update at our own pace along with them.
+"""
+function update_tag()
+    global BREW_STABLE_SHA, brew_prefix
+    cd(brew_prefix) do
+        try
+            run(pipeline(`git tag -d 9.9.9`, stdout=DevNull, stderr=DevNull))
+        end
+        run(pipeline(`git tag 9.9.9 $BREW_STABLE_SHA`, stdout=DevNull, stderr=DevNull))
+        run(pipeline(`git checkout 9.9.9`, stdout=DevNull, stderr=DevNull))
+    end
+    return nothing
 end

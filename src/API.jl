@@ -49,6 +49,9 @@ function update(;verbose::Bool=false)
     # Just run `brew update`
     brew(`update`; force=true, verbose=verbose)
 
+    # Ensure we're on the right tag
+    update_tag()
+
     # Finally, upgrade outdated packages.
     upgrade(;verbose=verbose)
 end
