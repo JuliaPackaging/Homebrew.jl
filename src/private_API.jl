@@ -132,19 +132,27 @@ end
 
 
 """
-`update_tag()`
+`update_tag(;verbose::Bool = false)`
 
 We maintain our own "stable" tag that overrides Homebrew so that we can
 update at our own pace along with them.
 """
-function update_tag()
+function update_tag(;verbose::Bool=false)
     global BREW_STABLE_SHA, brew_prefix
+
+    if verbose
+        git = cmd -> run(`git $cmd`)
+    else
+        git = cmd -> run(pipeline(`git $cmd`, stdout=DevNull, stderr=DevNull))
+    end
+
     cd(brew_prefix) do
         try
-            run(pipeline(`git tag -d 9.9.9`, stdout=DevNull, stderr=DevNull))
+            git(`tag -d 9.9.9`)
         end
-        run(pipeline(`git tag 9.9.9 $BREW_STABLE_SHA`, stdout=DevNull, stderr=DevNull))
-        run(pipeline(`git checkout 9.9.9`, stdout=DevNull, stderr=DevNull))
+        git(`fetch`)
+        git(`tag 9.9.9 $BREW_STABLE_SHA`)
+        git(`checkout 9.9.9`)
     end
     return nothing
 end
