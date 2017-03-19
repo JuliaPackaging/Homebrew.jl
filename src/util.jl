@@ -66,7 +66,7 @@ end
 Download a tarball from `url` and unpack it into `target_dir`.
 """
 function download_and_unpack(url::AbstractString, target_dir::AbstractString; strip=0)
-    @compat run(pipeline(`curl -# -L $url`,
+    @compat run(pipeline(`curl -\# -L $url`,
                          `tar xz -m --strip 1 -C $target_dir`))
 end
 

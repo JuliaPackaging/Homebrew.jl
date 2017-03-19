@@ -608,7 +608,7 @@ function tap(tap_name::AbstractString; full::Bool=true, verbose::Bool=false)
             end
             try
                 mkpath(tap_path)
-                @compat run(pipeline(`curl -# -L $tarball_url`, `tar xz -m --strip 1 -C $tap_path`))
+                @compat run(pipeline(`curl -\# -L $tarball_url`, `tar xz -m --strip 1 -C $tap_path`))
             catch
                 warn("Could not download/extract $tarball_url into $(tap_path)!")
                 rethrow()
