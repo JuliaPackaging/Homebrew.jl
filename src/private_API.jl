@@ -56,6 +56,9 @@ function install_brew()
         add("git")
     end
 
+    # Update the environment before running update()
+    update_env()
+
     # Update immediately so that we get onto our "stable" tag
     update(verbose=true)
 
