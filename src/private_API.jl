@@ -51,7 +51,7 @@ function install_brew()
         add("cctools")
     end
 
-    if !git_installed() && !installed("git")
+    if !installed("git")
         # If we don't have a git available, install it now
         add("git")
     end
@@ -140,10 +140,11 @@ update at our own pace along with them.
 function update_tag(;verbose::Bool=false)
     global BREW_STABLE_SHA, brew_prefix
 
+    git_path = joinpath(brew_prefix, "bin", "git")
     if verbose
-        git = cmd -> run(`git $cmd`)
+        git = cmd -> run(`$git_path $cmd`)
     else
-        git = cmd -> run(pipeline(`git $cmd`, stdout=DevNull, stderr=DevNull))
+        git = cmd -> run(pipeline(`$git_path $cmd`, stdout=DevNull, stderr=DevNull))
     end
 
     cd(brew_prefix) do
@@ -151,7 +152,7 @@ function update_tag(;verbose::Bool=false)
             git(`tag -d 9.9.9`)
         end
         try
-            git(`fetch --depth=100000`)
+            git(`fetch --unshallow`)
         end
         git(`tag 9.9.9 $BREW_STABLE_SHA`)
         git(`checkout 9.9.9`)
