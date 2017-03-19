@@ -151,7 +151,7 @@ function update_tag(;verbose::Bool=false)
             git(`tag -d 9.9.9`)
         end
         try
-            git(`fetch --unshallow`)
+            git(`fetch --depth=100000`)
         end
         git(`tag 9.9.9 $BREW_STABLE_SHA`)
         git(`checkout 9.9.9`)
