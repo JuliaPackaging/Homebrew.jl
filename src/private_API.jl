@@ -57,7 +57,7 @@ function install_brew()
     end
 
     # Update immediately so that we get onto our "stable" tag
-    update()
+    update(verbose=true)
 
     return nothing
 end

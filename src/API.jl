@@ -50,7 +50,7 @@ function update(;verbose::Bool=false)
     brew(`update`; force=true, verbose=verbose)
 
     # Ensure we're on the right tag
-    update_tag()
+    update_tag(;verbose=verbose)
 
     # Finally, upgrade outdated packages.
     upgrade(;verbose=verbose)
