@@ -51,7 +51,7 @@ function install_brew()
         add("cctools")
     end
 
-    if !installed("git")
+    if !git_installed() && !installed("git")
         # If we don't have a git available, install it now
         add("git")
     end
@@ -142,6 +142,14 @@ update at our own pace along with them.
 """
 function update_tag(;verbose::Bool=false)
     global BREW_STABLE_SHA, brew_prefix
+
+    # If a recent enough version of git is not installed, then install our own
+    # This is necessary because some people do not have git installed but already
+    # have Homebrew installed, and the check up above during install_brew()
+    # doesn't run every time
+    if !git_installed()
+        add("git")
+    end
 
     git_path = joinpath(brew_prefix, "bin", "git")
     if verbose

@@ -101,6 +101,19 @@ function git_installed()
         return false
     end
 
+    # check that the git version is at least 2.0.0.0.  We may end up
+    # tightening these bounds a little bit in the future, so parse
+    # out the full git version
+    m = match(r"^git version ([\d\.]+) ", readchomp(`git --version`))
+    if m === nothing
+        return false
+    end
+    gitver = [parse(Int64, x) for x in split(m.captures[1], ".")]
+
+    if gitver[1] < 2
+        return false
+    end
+
     # If we made it through the gauntlet, succeed!
     return true
 end
