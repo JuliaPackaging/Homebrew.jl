@@ -152,11 +152,10 @@ function update_tag(;verbose::Bool=false)
         add("git")
     end
 
-    git_path = joinpath(brew_prefix, "bin", "git")
     if verbose
-        git = cmd -> run(`$git_path $cmd`)
+        git = cmd -> run(`git $cmd`)
     else
-        git = cmd -> run(pipeline(`$git_path $cmd`, stdout=DevNull, stderr=DevNull))
+        git = cmd -> run(pipeline(`git $cmd`, stdout=DevNull, stderr=DevNull))
     end
 
     cd(brew_prefix) do
