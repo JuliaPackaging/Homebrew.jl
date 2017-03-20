@@ -138,7 +138,8 @@ end
 `update_tag(;verbose::Bool = false)`
 
 We maintain our own "stable" tag that overrides Homebrew so that we can
-update at our own pace along with them.
+update at our own pace along with them.  Make sure to call `update_env()`
+before calling this, as calling our `git` doesn't work properly otherwise.
 """
 function update_tag(;verbose::Bool=false)
     global BREW_STABLE_SHA, brew_prefix
