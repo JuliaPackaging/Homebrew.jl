@@ -87,6 +87,8 @@ end
 `git_installed()`
 
 Checks whether `git` is truly installed or not, dealing with stubs in /usr/bin
+Also ensure that the version is new enough (e.g. >= 2.0.0.0) that it will work
+with `git fetch --unshallow` on Homebrew.
 """
 function git_installed()
     gitpath = readchomp(`which git`)
@@ -98,6 +100,19 @@ function git_installed()
 
     # If we have a git from the CLT location, but the CLT isn't installed, fail
     if gitpath == "/usr/bin/git" && !clt_installed()
+        return false
+    end
+
+    # check that the git version is at least 2.0.0.0.  We may end up
+    # tightening these bounds a little bit in the future, so parse
+    # out the full git version
+    m = match(r"^git version ([\d\.]+) ", readchomp(`git --version`))
+    if m === nothing
+        return false
+    end
+    gitver = [parse(Int64, x) for x in split(m.captures[1], ".")]
+
+    if gitver[1] < 2
         return false
     end
 
