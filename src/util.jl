@@ -87,6 +87,8 @@ end
 `git_installed()`
 
 Checks whether `git` is truly installed or not, dealing with stubs in /usr/bin
+Also ensure that the version is new enough (e.g. >= 2.0.0.0) that it will work
+with `git fetch --unshallow` on Homebrew.
 """
 function git_installed()
     gitpath = readchomp(`which git`)
