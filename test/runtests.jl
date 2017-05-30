@@ -62,8 +62,9 @@ end
 # Test that we can probe for bottles properly
 @test Homebrew.has_bottle("ack") == false
 @test Homebrew.has_bottle("cairo") == true
+# I will be a very happy man the day this test starts to fail
 @test Homebrew.has_relocatable_bottle("cairo") == false
-@test Homebrew.has_relocatable_bottle("fontconfig") == true
+@test Homebrew.has_relocatable_bottle("staticfloat/juliadeps/libgfortran") == true
 @test Homebrew.json(pkgconfig)["name"] == "pkg-config"
 
 # Test that has_bottle knows which OSX version we're running on.
