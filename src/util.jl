@@ -136,8 +136,3 @@ end
 
 
 # This seems like maybe something that should be in Compat.jl
-if VERSION < v"0.4.0"
-    import Base: convert
-    convert(::Type{SubString{UTF8String}}, s::SubString{ASCIIString}) =
-        SubString(utf8(s.string), s.offset+1, s.endof+s.offset)
-end
