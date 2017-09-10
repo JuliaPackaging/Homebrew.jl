@@ -638,7 +638,8 @@ function osx_version_string()
         "10.9" => "mavericks",
         "10.10" => "yosemite",
         "10.11" => "el_capitan",
-        "10.12" => "sierra"
+        "10.12" => "sierra",
+        "10.13" => "high_sierra"
     )[OSX_VERSION[1]]
 end
 
