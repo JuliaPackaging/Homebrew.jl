@@ -162,7 +162,9 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
 
     # Find bottle section. We allow 1 to 8 lines of code in a bottle stanza:
     # a root_url, a prefix, a cellar, a revision, and four OSX version bottles.
-    m = match(r"\n\s*bottle\s+do\n(?:[^\n]*\n){1,8}\s*end\s*\n", formula)
+
+    ex = r"(?:\r\n|\r|\n)\s*bottle\s+do(?:\r\n|\r|\n)(?:[^\n]*(?:\r\n|\r|\n)){1,8}\s*end\s*(?:\r\n|\r|\n)"
+    m = match(ex, formula)
     if m === nothing
         # This shouldn't happen, because we passed `has_bottle()` above
         warn("Couldn't find bottle stanza in $name")
