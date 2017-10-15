@@ -3,7 +3,7 @@ using BinDeps
 import BinDeps: PackageManager, can_use, package_available, libdir, generate_steps, LibraryDependency, provider
 import Base: show
 
-type HB <: PackageManager
+mutable struct HB <: PackageManager
     packages
 end
 
@@ -13,7 +13,7 @@ show(io::IO, hb::HB) = write(io, "Homebrew Bottles ",
 
 
 # Only return true on Darwin platforms
-can_use(::Type{HB}) = Compat.KERNEL == :Darwin
+can_use(::Type{HB}) = Sys.KERNEL == :Darwin
 
 function package_available(p::HB)
     !can_use(HB) && return false
@@ -35,7 +35,7 @@ end
 
 libdir(p::HB, dep) = joinpath(brew_prefix, "lib")
 
-provider{T<:AbstractString}(::Type{HB}, packages::Vector{T}; opts...) = HB(packages)
+provider(::Type{HB}, packages::Vector{T}; opts...) where {T <: AbstractString} = HB(packages)
 
 function generate_steps(dep::LibraryDependency, p::HB, opts)
     pkgs = p.packages

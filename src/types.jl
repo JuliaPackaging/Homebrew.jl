@@ -6,7 +6,7 @@ A simple type to give us some nice ways of representing our packages to the user
 It contains important information such as the `name` of the package, the `tap` it
 came from, the `version` of the package and whether it was `translated` or not
 """
-immutable BrewPkg
+struct BrewPkg
     # The name of this particular Brew package
     name::String
 
@@ -44,4 +44,4 @@ end
 
 A convenience type accepting either an `AbstractString` or a `BrewPkg`
 """
-StringOrPkg = @compat Union{AbstractString, BrewPkg}
+const StringOrPkg = Union{AbstractString, BrewPkg}

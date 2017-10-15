@@ -3,7 +3,6 @@ module Homebrew
 
 import Base: show
 using JSON
-using Compat; import Compat.String
 
 # Find homebrew installation prefix
 const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
