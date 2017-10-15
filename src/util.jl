@@ -66,7 +66,7 @@ end
 Download a tarball from `url` and unpack it into `target_dir`.
 """
 function download_and_unpack(url::AbstractString, target_dir::AbstractString; strip=0)
-    @compat run(pipeline(`curl -\# -L $url`,
+    run(pipeline(`curl -\# -L $url`,
                          `tar xz -m --strip 1 -C $target_dir`))
 end
 
@@ -77,7 +77,7 @@ Checks whether the command-line tools are installed, as reported by xcode-select
 """
 function clt_installed()
     try
-        @compat !isempty(readchomp(pipeline(`/usr/bin/xcode-select -print-path`, stderr=DevNull)))
+        !isempty(readchomp(pipeline(`/usr/bin/xcode-select -print-path`, stderr=DevNull)))
     catch
         return false
     end
@@ -133,6 +133,3 @@ function formula_tap(name::AbstractString)
     end
     return basename(name), tap_path
 end
-
-
-# This seems like maybe something that should be in Compat.jl

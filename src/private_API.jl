@@ -30,7 +30,7 @@ function install_brew()
 
         try
             Base.info("Downloading brew...")
-            @compat run(pipeline(`curl -\# -L $BREW_URL/tarball/$BREW_BRANCH`,
+            run(pipeline(`curl -\# -L $BREW_URL/tarball/$BREW_BRANCH`,
                                  `tar xz -m --strip 1 -C $brew_prefix`))
         catch
             warn("Could not download/extract $BREW_URL/tarball/$BREW_BRANCH into $(brew_prefix)!")

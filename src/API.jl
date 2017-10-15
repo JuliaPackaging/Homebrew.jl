@@ -8,13 +8,13 @@ Run command `cmd` using the configured brew binary, optionally suppressing
 stdout and stderr, and providing flags such as `--verbose` to the brew binary.
 """
 function brew(cmd::Cmd; no_stderr=false, no_stdout=false, verbose::Bool=false, force::Bool=false, quiet::Bool=false)
-    @compat cmd = add_flags(`$brew_exe $cmd`, Dict(`--verbose` => verbose, `--force` => force, `--quiet` => quiet))
+    cmd = add_flags(`$brew_exe $cmd`, Dict(`--verbose` => verbose, `--force` => force, `--quiet` => quiet))
 
     if no_stderr
-        @compat cmd = pipeline(cmd, stderr=DevNull)
+        cmd = pipeline(cmd, stderr=DevNull)
     end
     if no_stdout
-        @compat cmd = pipeline(cmd, stdout=DevNull)
+        cmd = pipeline(cmd, stdout=DevNull)
     end
     return run(cmd)
 end
@@ -28,13 +28,13 @@ stdout and stderr, and providing flags such as `--verbose` to the brew binary.
 This function uses `readchomp()`, as opposed to `brew()` which uses `run()`
 """
 function brewchomp(cmd::Cmd; no_stderr=false, no_stdout=false, verbose::Bool=false, force::Bool=false, quiet::Bool=false)
-    @compat cmd = add_flags(`$brew_exe $cmd`, Dict(`--verbose` => verbose, `--force` => force, `--quiet` => quiet))
+    cmd = add_flags(`$brew_exe $cmd`, Dict(`--verbose` => verbose, `--force` => force, `--quiet` => quiet))
 
     if no_stderr
-        @compat cmd = pipeline(cmd, stderr=DevNull)
+        cmd = pipeline(cmd, stderr=DevNull)
     end
     if no_stdout
-        @compat cmd = pipeline(cmd, stdout=DevNull)
+        cmd = pipeline(cmd, stdout=DevNull)
     end
     return readchomp(cmd)
 end
@@ -158,7 +158,7 @@ Note that running `brew info --json=v1` is somewhat expensive, so we cache the
 results in a global dictionary, and batching larger requests with this function
 similarly increases performance.
 """
-function json{T<:AbstractString}(names::Vector{T})
+function json(names::Vector{T}) where {T <: AbstractString}
     # This is the dictionary of responses we'll return
     objs = Dict{String,Dict{AbstractString,Any}}()
 
@@ -224,7 +224,7 @@ end
 For each name in `names`, returns information about that particular package name
 as a BrewPkg.  This is our batched `String` -> `BrewPkg` converter.
 """
-function info{T<:AbstractString}(names::Vector{T})
+function info(names::Vector{T}) where {T <: AbstractString}
     # Get the JSON representations of all of these packages
     objs = json(names)
 
@@ -567,7 +567,7 @@ end
 
 Remove packages `pkgs`, use `--force` if `force` == `true`
 """
-function rm{T<:StringOrPkg}(pkgs::Vector{T}; verbose::Bool=false, force::Bool=false)
+function rm(pkgs::Vector{T}; verbose::Bool=false, force::Bool=false) where {T <: StringOrPkg}
     for pkg in pkgs
         try
             rm(pkg; verbose=verbose, force=force)
@@ -608,7 +608,7 @@ function tap(tap_name::AbstractString; full::Bool=true, verbose::Bool=false)
             end
             try
                 mkpath(tap_path)
-                @compat run(pipeline(`curl -\# -L $tarball_url`, `tar xz -m --strip 1 -C $tap_path`))
+                run(pipeline(`curl -\# -L $tarball_url`, `tar xz -m --strip 1 -C $tap_path`))
             catch
                 warn("Could not download/extract $tarball_url into $(tap_path)!")
                 rethrow()
@@ -629,7 +629,7 @@ function osx_version_string()
     if isempty(OSX_VERSION[1])
         OSX_VERSION[1] = join(split(readchomp(`sw_vers -productVersion`), ".")[1:2],".")
     end
-    return @compat Dict(
+    return Dict(
         "10.4" => "tiger",
         "10.5" => "leopard",
         "10.6" => "snow_leopard",
