@@ -1,3 +1,5 @@
+import Base: ==
+
 """
 `BrewPkg`
 
@@ -15,6 +17,10 @@ struct BrewPkg
 
     # The version of this brew package
     version::String
+end
+
+function ==(x::BrewPkg, y::BrewPkg)
+    return x.name == y.name && x.tap == y.tap && x.version == y.version
 end
 
 """
