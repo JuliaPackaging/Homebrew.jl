@@ -15,7 +15,7 @@ const auto_tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebr
 # Where we download brew from
 const BREW_URL = "https://github.com/Homebrew/brew"
 const BREW_BRANCH = "master"
-const BREW_STABLE_SHA = "b4e1e39d3b38b722fc554a3665d9b6dbf165d99a"
+const BREW_STABLE_SHA = "236b0172306a6f4b233d374fcc20adce5c3e3261"
 
 """
 `install_brew()`
