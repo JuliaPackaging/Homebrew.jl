@@ -2,6 +2,7 @@ __precompile__()
 module Homebrew
 
 import Base: show
+@static if VERSION > v"0.7-" using Unicode end
 using JSON
 
 # Find homebrew installation prefix
