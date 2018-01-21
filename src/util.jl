@@ -1,5 +1,7 @@
 # This file contains various utility functions that don't belong anywhere else
 
+import Compat: Libdl
+
 """
 `update_env()`
 
