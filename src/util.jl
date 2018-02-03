@@ -36,7 +36,9 @@ function update_env()
 
     # If we have `git` installed from Homebrew, add its environment variables
     if isfile(joinpath(brew_prefix,"bin","git"))
-        ENV["GIT_EXEC_PATH"] = joinpath(brew_prefix,"opt","git","libexec","git-core")
+        git_core = joinpath(brew_prefix,"opt","git","libexec","git-core")
+        ENV["PATH"] = ENV["PATH"] * ":" * git_core
+        ENV["GIT_EXEC_PATH"] = git_core
         ENV["GIT_TEMPLATE_DIR"] = joinpath(brew_prefix,"opt","git","share","git-core")
     end
     return
