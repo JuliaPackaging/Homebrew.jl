@@ -38,6 +38,7 @@ function update_env()
     if isfile(joinpath(brew_prefix,"bin","git"))
         git_core = joinpath(brew_prefix,"opt","git","libexec","git-core")
         ENV["PATH"] = ENV["PATH"] * ":" * git_core
+        ENV["HOMEBREW_NO_ENV_FILTERING"] = "1"
         ENV["GIT_EXEC_PATH"] = git_core
         ENV["GIT_TEMPLATE_DIR"] = joinpath(brew_prefix,"opt","git","share","git-core")
     end
