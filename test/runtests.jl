@@ -6,7 +6,7 @@ info("Using Homebrew.jl installed to $(Homebrew.prefix())")
 
 # Restore pkg-config to its installed (or non-installed) state at the end of all of this
 pkg_was_installed = Homebrew.installed("pkg-config")
-perf_was_installed = Homebrew.installed("homebrew/science/perf")
+libgfortran_was_installed = Homebrew.installed("staticfloat/juliadeps/libgfortran")
 
 if pkg_was_installed
     info("Removing pkg-config for our testing...")
@@ -76,29 +76,29 @@ info("Translation should pass:")
 info("Translation should fail because it has no bottles:")
 @test Homebrew.translate_formula("ack"; verbose=true) == "ack"
 
-if perf_was_installed
-    # Remove perf before we start messing around with it
-    Homebrew.rm("homebrew/science/perf"; force=true)
+if libgfortran_was_installed
+    # Remove libgfortran before we start messing around with it
+    Homebrew.rm("staticfloat/juliadeps/libgfortran"; force=true)
 end
 
 # Make sure translation works properly with other taps
-Homebrew.delete_translated_formula("Homebrew/science/perf"; verbose=true)
-info("Translation should pass because we just deleted perf from translation cache:")
-@test Homebrew.translate_formula("Homebrew/science/perf"; verbose=true) == "staticfloat/juliatranslated/perf"
-info("Translation should fail because perf has already been translated:")
+Homebrew.delete_translated_formula("staticfloat/juliadeps/libgfortran"; verbose=true)
+info("Translation should pass because we just deleted libgfortran from translation cache:")
+@test Homebrew.translate_formula("staticfloat/juliadeps/libgfortran"; verbose=true) == "staticfloat/juliatranslated/libgfortran"
+info("Translation should fail because libgfortran has already been translated:")
 # Do it a second time so we can get coverage of practicing that particular method of bailing out
-Homebrew.translate_formula(Homebrew.info("Homebrew/science/perf"); verbose=true)
+Homebrew.translate_formula(Homebrew.info("staticfloat/juliadeps/libgfortran"); verbose=true)
 
 # Test that installation of a formula from a tap when it's already been translated works
-Homebrew.add("Homebrew/science/perf"; verbose=true)
+Homebrew.add("staticfloat/juliadeps/libgfortran"; verbose=true)
 
-if !perf_was_installed
-    Homebrew.rm("Homebrew/science/perf")
+if !libgfortran_was_installed
+    Homebrew.rm("staticfloat/juliadeps/libgfortran")
 end
 
-# Now that we have homebrew/science installed, test to make sure that prefix() works
+# Now that we have staticfloat/juliadeps tapped, test to make sure that prefix() works
 # with taps properly:
-@test Homebrew.prefix("metis4") == Homebrew.prefix("homebrew/science/metis4")
+@test Homebrew.prefix("libgfortran") == Homebrew.prefix("staticfloat/juliadeps/libgfortran")
 
 # Test more miscellaneous things
 fontconfig = Homebrew.info("staticfloat/juliadeps/fontconfig")
