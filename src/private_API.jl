@@ -155,7 +155,7 @@ function update_tag(;verbose::Bool=false)
     if verbose
         git = cmd -> run(`git $cmd`)
     else
-        git = cmd -> run(pipeline(`git $cmd`, stdout=DevNull, stderr=DevNull))
+        git = cmd -> run(pipeline(`git $cmd`, stdout=devnull, stderr=devnull))
     end
 
     cd(brew_prefix) do

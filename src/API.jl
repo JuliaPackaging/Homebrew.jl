@@ -11,10 +11,10 @@ function brew(cmd::Cmd; no_stderr=false, no_stdout=false, verbose::Bool=false, f
     cmd = add_flags(`$brew_exe $cmd`, Dict(`--verbose` => verbose, `--force` => force, `--quiet` => quiet))
 
     if no_stderr
-        cmd = pipeline(cmd, stderr=DevNull)
+        cmd = pipeline(cmd, stderr=devnull)
     end
     if no_stdout
-        cmd = pipeline(cmd, stdout=DevNull)
+        cmd = pipeline(cmd, stdout=devnull)
     end
     return run(cmd)
 end
@@ -31,10 +31,10 @@ function brewchomp(cmd::Cmd; no_stderr=false, no_stdout=false, verbose::Bool=fal
     cmd = add_flags(`$brew_exe $cmd`, Dict(`--verbose` => verbose, `--force` => force, `--quiet` => quiet))
 
     if no_stderr
-        cmd = pipeline(cmd, stderr=DevNull)
+        cmd = pipeline(cmd, stderr=devnull)
     end
     if no_stdout
-        cmd = pipeline(cmd, stdout=DevNull)
+        cmd = pipeline(cmd, stdout=devnull)
     end
     return readchomp(cmd)
 end

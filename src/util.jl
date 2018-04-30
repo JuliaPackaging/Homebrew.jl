@@ -80,7 +80,7 @@ Checks whether the command-line tools are installed, as reported by xcode-select
 """
 function clt_installed()
     try
-        !isempty(readchomp(pipeline(`/usr/bin/xcode-select -print-path`, stderr=DevNull)))
+        !isempty(readchomp(pipeline(`/usr/bin/xcode-select -print-path`, stderr=devnull)))
     catch
         return false
     end
