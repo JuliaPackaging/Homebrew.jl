@@ -339,8 +339,8 @@ after all dependencies of `name`.  If a dependency of `name` is not already in
 """
 function insert_after_dependencies(tree::Dict, sorted_deps::Vector{BrewPkg}, name::AbstractString)
     # First off, are we already in sorted_deps?  If so, back out!
-    self_idx = findfirst(x -> (fullname(x) == name), sorted_deps)
-    if self_idx != 0 && self_idx != nothing
+    self_idx = Compat.findfirst(x -> (fullname(x) == name), sorted_deps)
+    if self_idx != nothing
         return self_idx
     end
 
@@ -349,10 +349,10 @@ function insert_after_dependencies(tree::Dict, sorted_deps::Vector{BrewPkg}, nam
     # Iterate over all dependencies
     for dpkg in tree[name]
         # Is this dependency already in the sorted_deps?
-        idx = findfirst(x -> (fullname(x) == fullname(dpkg)), sorted_deps)
+        idx = Compat.findfirst(x -> (fullname(x) == fullname(dpkg)), sorted_deps)
 
         # If the dependency is not already in this list, then recurse into it!
-        if idx == 0 || self_idx == nothing
+        if self_idx == nothing
             idx = insert_after_dependencies(tree, sorted_deps, fullname(dpkg))
         end
 
