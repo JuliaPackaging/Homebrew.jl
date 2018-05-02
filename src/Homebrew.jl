@@ -3,7 +3,7 @@ module Homebrew
 
 import Base: show
 @static if VERSION > v"0.7-" using Unicode end
-using JSON
+using JSON, Compat
 
 # Find homebrew installation prefix
 const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
