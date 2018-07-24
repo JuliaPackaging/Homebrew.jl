@@ -1,2 +1,7 @@
 using Homebrew
-Homebrew.update()
+using Compat
+
+if Sys.isapple()
+    Homebrew.update()
+end
+
