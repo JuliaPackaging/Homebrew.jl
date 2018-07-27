@@ -3,6 +3,7 @@ os: osx
 osx_image: xcode7.3
 julia:
     - 0.6
+    - 0.7
     - nightly
 notifications:
     email: false

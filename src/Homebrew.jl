@@ -34,11 +34,23 @@ need is downloaded/installed, then calls `update_env()` to set the environment
 properly so that packages being installed can find their binaries.
 """
 function __init__()
-    # Let's see if Homebrew is installed.  If not, let's do that first!
-    (isdir(brew_prefix) && isdir(tappath)) || install_brew()
+    if VERSION < v"0.7-" ? is_apple() : Sys.isapple()
+        # Let's see if Homebrew is installed.  If not, let's do that first!
+        (isdir(brew_prefix) && isdir(tappath)) || install_brew()
 
-    # Update environment variables such as PATH, DL_LOAD_PATH, etc...
-    update_env()
+        # Update environment variables such as PATH, DL_LOAD_PATH, etc...
+        update_env()
+    else
+        # change this to an error in future
+        warning("""
+Homebrew.jl can only be used on Apple macOS. Suggested usage is
+
+    @static if Sys.isapple()
+        using Homebrew
+        # Homebrew specific code goes here
+    end
+""")
+    end
 end
 
 
