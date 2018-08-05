@@ -161,9 +161,11 @@ function update_tag(;verbose::Bool=false)
     cd(brew_prefix) do
         try
             git(`tag -d 9.9.9`)
+        catch
         end
         try
             git(`fetch --unshallow`)
+        catch
         end
         git(`tag 9.9.9 $BREW_STABLE_SHA`)
         git(`checkout 9.9.9`)
