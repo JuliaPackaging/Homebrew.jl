@@ -59,6 +59,7 @@ function delete_translated_formula(name::AbstractString; verbose::Bool=false)
         if verbose
             println("Deleting $(basename(del_path))...")
         end
+    catch
     end
 end
 
