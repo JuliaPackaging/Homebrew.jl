@@ -571,6 +571,7 @@ function rm(pkgs::Vector{T}; verbose::Bool=false, force::Bool=false) where {T <:
     for pkg in pkgs
         try
             rm(pkg; verbose=verbose, force=force)
+        catch
         end
     end
 end
