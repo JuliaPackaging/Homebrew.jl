@@ -1,4 +1,3 @@
-__precompile__()
 module Homebrew
 
 import Base: show
@@ -33,7 +32,7 @@ need is downloaded/installed, then calls `update_env()` to set the environment
 properly so that packages being installed can find their binaries.
 """
 function __init__()
-    if VERSION < v"0.7-" ? is_apple() : Sys.isapple()
+    if Sys.isapple()
         # Let's see if Homebrew is installed.  If not, let's do that first!
         (isdir(brew_prefix) && isdir(tappath)) || install_brew()
 
