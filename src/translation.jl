@@ -6,11 +6,11 @@ Returns the string contents of a package's formula.
 function read_formula(pkg::StringOrPkg) end
 
 function read_formula(name::AbstractString)
-    return readstring(formula_path(name))
+    return read(formula_path(name), String)
 end
 
 function read_formula(pkg::BrewPkg)
-    return readstring(formula_path(pkg))
+    return read(formula_path(pkg), String)
 end
 
 """
@@ -168,7 +168,7 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
     m = match(ex, formula)
     if m === nothing
         # This shouldn't happen, because we passed `has_bottle()` above
-        warn("Couldn't find bottle stanza in $name")
+        @warn("Couldn't find bottle stanza in $name")
         return name
     end
 
@@ -191,7 +191,7 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
 
     # We should, however, preserve :any_skip_relocation if that is what this
     # bottle is marked as, which includes important bottles such as `cctools`.
-    if contains(m.match, ":any_skip_relocation")
+    if occursin(":any_skip_relocation", m.match)
         insert!(bottle_lines, bottle_idx+1, SubString("    cellar :any_skip_relocation",1))
     else
         insert!(bottle_lines, bottle_idx+1, SubString("    cellar :any",1))
@@ -231,7 +231,7 @@ function translate_formula(name::AbstractString; verbose::Bool=false)
     # Read that formula in again as a JSON object, compare with the original
     new_obj = json(override_name)
     if !has_relocatable_bottle(override_name)
-        warn("New formula $override_name doesn't have a relocatable bottle despite our meddling")
+        @warn("New formula $override_name doesn't have a relocatable bottle despite our meddling")
         return name
     end
 

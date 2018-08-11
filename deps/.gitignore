@@ -1,2 +1,3 @@
 usr/
 !.gitignore
+build.log

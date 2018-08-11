@@ -15,7 +15,7 @@ const auto_tappath = joinpath(brew_prefix,"Library","Taps","staticfloat","homebr
 # Where we download brew from
 const BREW_URL = "https://github.com/Homebrew/brew"
 const BREW_BRANCH = "master"
-const BREW_STABLE_SHA = "650d6dbaac625a758881a215a35d8d4a248de5bf"
+const BREW_STABLE_SHA = "d6a245c05110c240e680da594c2cc6038998b82e"
 
 """
 `install_brew()`
@@ -25,16 +25,26 @@ and that we have whatever binary tools we need, such as `install_name_tool`
 """
 function install_brew()
     # Ensure brew_prefix exists
-    if !isdir(brew_prefix)
-        mkdir(brew_prefix)
+    if !isdir(brew_prefix) || !isfile(joinpath(brew_prefix,"bin","brew"))
+        try
+            mkdir(brew_prefix)
+        catch
+        end
 
         try
-            Base.info("Downloading brew...")
+            @info("Downloading brew...")
             run(pipeline(`curl -\# -L $BREW_URL/tarball/$BREW_BRANCH`,
                                  `tar xz -m --strip 1 -C $brew_prefix`))
         catch
-            warn("Could not download/extract $BREW_URL/tarball/$BREW_BRANCH into $(brew_prefix)!")
+            @warn("Could not download/extract $BREW_URL/tarball/$BREW_BRANCH into $(brew_prefix)!")
             rethrow()
+        end
+        
+        cd(brew_prefix) do
+            try
+                git(`fetch --unshallow`)
+            catch
+            end
         end
     end
 
@@ -161,10 +171,6 @@ function update_tag(;verbose::Bool=false)
     cd(brew_prefix) do
         try
             git(`tag -d 9.9.9`)
-        catch
-        end
-        try
-            git(`fetch --unshallow`)
         catch
         end
         git(`tag 9.9.9 $BREW_STABLE_SHA`)
