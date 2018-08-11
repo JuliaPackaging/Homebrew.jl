@@ -2,8 +2,8 @@ language: julia
 os: osx
 osx_image: xcode7.3
 julia:
-    - 0.6
     - 0.7
+    - 1.0
     - nightly
 notifications:
     email: false
