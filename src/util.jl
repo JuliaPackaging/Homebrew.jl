@@ -14,7 +14,7 @@ HOMEBREW_CACHE stores our bottle download cache in a separate place, separating
 ourselves from other Homebrew installations so we don't conflict with anyone
 """
 function update_env()
-    if isempty(Base.search(ENV["PATH"], joinpath(brew_prefix, "bin")))
+    if findfirst(joinpath(brew_prefix, "bin"), ENV["PATH"]) == nothing
         ENV["PATH"] = "$(abspath(joinpath(brew_prefix, "bin"))):$(abspath(joinpath(brew_prefix, "sbin"))):$(ENV["PATH"])"
     end
 

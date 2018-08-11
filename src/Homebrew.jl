@@ -1,9 +1,7 @@
-__precompile__()
 module Homebrew
 
 import Base: show
-@static if VERSION > v"0.7-" using Unicode end
-using JSON, Compat
+using Unicode, JSON, Libdl, InteractiveUtils
 
 # Find homebrew installation prefix
 const brew_prefix = abspath(joinpath(dirname(@__FILE__),"..","deps", "usr"))
@@ -34,7 +32,7 @@ need is downloaded/installed, then calls `update_env()` to set the environment
 properly so that packages being installed can find their binaries.
 """
 function __init__()
-    if VERSION < v"0.7-" ? is_apple() : Sys.isapple()
+    if Sys.isapple()
         # Let's see if Homebrew is installed.  If not, let's do that first!
         (isdir(brew_prefix) && isdir(tappath)) || install_brew()
 
@@ -42,7 +40,7 @@ function __init__()
         update_env()
     else
         # change this to an error in future
-        warning("""
+        @warn("""
 Homebrew.jl can only be used on Apple macOS. Suggested usage is
 
     @static if Sys.isapple()

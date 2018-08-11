@@ -339,7 +339,7 @@ after all dependencies of `name`.  If a dependency of `name` is not already in
 """
 function insert_after_dependencies(tree::Dict, sorted_deps::Vector{BrewPkg}, name::AbstractString)
     # First off, are we already in sorted_deps?  If so, back out!
-    self_idx = Compat.findfirst(x -> (fullname(x) == name), sorted_deps)
+    self_idx = findfirst(x -> (fullname(x) == name), sorted_deps)
     if self_idx != nothing
         return self_idx
     end
@@ -349,7 +349,7 @@ function insert_after_dependencies(tree::Dict, sorted_deps::Vector{BrewPkg}, nam
     # Iterate over all dependencies
     for dpkg in tree[name]
         # Is this dependency already in the sorted_deps?
-        idx = Compat.findfirst(x -> (fullname(x) == fullname(dpkg)), sorted_deps)
+        idx = findfirst(x -> (fullname(x) == fullname(dpkg)), sorted_deps)
 
         # If the dependency is not already in this list, then recurse into it!
         if self_idx == nothing
@@ -446,7 +446,7 @@ function add(name::AbstractString; verbose::Bool=false, keep_translations::Bool=
     non_relocatable = filter(x -> !has_relocatable_bottle(x), sorted_deps)
 
     if !isempty(non_relocatable)
-        warn("""
+        @warn("""
 The following packages do not have relocatable bottles, installation may fail!
 Please report these packages to https://github.com/JuliaLang/Homebrew.jl:
   $(join(non_relocatable, "\n  "))""")
@@ -605,13 +605,13 @@ function tap(tap_name::AbstractString; full::Bool=true, verbose::Bool=false)
             tap_path = joinpath(brew_prefix,"Library","Taps", user, repo)
 
             if verbose
-                Base.info("Manually tapping $tap_name...")
+                @info("Manually tapping $tap_name...")
             end
             try
                 mkpath(tap_path)
                 run(pipeline(`curl -\# -L $tarball_url`, `tar xz -m --strip 1 -C $tap_path`))
             catch
-                warn("Could not download/extract $tarball_url into $(tap_path)!")
+                @warn("Could not download/extract $tarball_url into $(tap_path)!")
                 rethrow()
             end
         else
@@ -668,7 +668,7 @@ function has_relocatable_bottle(name::AbstractString)
 end
 
 function versioninfo(;verbose=false)
-    Base.versioninfo(verbose)
+    InteractiveUtils.versioninfo(stdout; verbose=verbose)
     run(Cmd(`git log -1 '--pretty=format:Homebrew git revision %h; last commit %cr'`; dir=joinpath(prefix())))
     run(Cmd(`git log -1 '--pretty=format:homebrew/core git revision %h; last commit %cr'`; dir=joinpath(prefix(), "Library", "Taps", "homebrew", "homebrew-core")))
     run(Cmd(`git log -1 '--pretty=format:staticfloat/juliadeps revision %h; last commit %cr'`; dir=joinpath(prefix(), "Library", "Taps", "staticfloat", "homebrew-juliadeps")))
