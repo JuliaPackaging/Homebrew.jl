@@ -43,6 +43,8 @@ nettle = library_dependency("nettle", aliases = ["libnettle","libnettle-4-6"])
     using Homebrew
     provides( Homebrew.HB, "nettle", nettle, os = :Darwin )
 end
+
+@BinDeps.install Dict(:nettle => :nettle)
 ```
 
 Then, the `Homebrew` package will automatically download the requisite bottles for any dependencies you state it can provide.  This example garnered from the `build.jl` file from [`Nettle.jl` package](https://github.com/staticfloat/Nettle.jl/blob/master/deps/build.jl).
