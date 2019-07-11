@@ -651,8 +651,12 @@ end
 Checks if a given formula has a bottle at all
 """
 function has_bottle(name::AbstractString)
-    return haskey(json(name)["bottle"], "stable") &&
-           haskey(json(name)["bottle"]["stable"]["files"], osx_version_string())
+    return try
+            haskey(json(name)["bottle"], "stable") &&
+            haskey(json(name)["bottle"]["stable"]["files"], osx_version_string())
+        catch
+            false
+        end
 end
 
 """
