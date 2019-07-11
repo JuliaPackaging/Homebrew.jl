@@ -536,14 +536,14 @@ end
 
 Unlink package `pkg` from the global namespace, uses `--quiet` if `quiet == true`
 """
-function unlink(name::StringOrPkg; verbose::Bool=false, quiet::Bool=true) end
+function unlink(name::StringOrPkg; verbose::Bool=false) end
 
-function unlink(name::AbstractString; verbose::Bool=false, quiet::Bool=true)
-    brew(`unlink $name`; verbose=verbose, quiet=quiet)
+function unlink(name::AbstractString; verbose::Bool=false)
+    brew(`unlink $name`; verbose=verbose)
 end
 
-function unlink(pkg::BrewPkg; verbose::Bool=false, quiet::Bool=true)
-    return unlink(fullname(pkg); verbose=verbose, quiet=quiet)
+function unlink(pkg::BrewPkg; verbose::Bool=false)
+    return unlink(fullname(pkg); verbose=verbose)
 end
 
 
