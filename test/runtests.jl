@@ -70,7 +70,7 @@ end
 @test Homebrew.json(pkgconfig)["name"] == "pkg-config"
 
 # Test that has_bottle knows which OSX version we're running on.
-@test Homebrew.has_bottle("ld64") == false
+@test Homebrew.has_bottle("staticfloat/juliadeps/rmath-julia") == false
 
 # Test that we can translate properly
 @info("Translation should pass:")

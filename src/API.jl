@@ -489,7 +489,7 @@ function install_and_link(name::AbstractString; verbose::Bool=false)
     end
 
     # Install dependency and link it
-    brew(`install --ignore-dependencies $name`; verbose=verbose)
+    brew(`install $name`; verbose=verbose)
     link(name; verbose=verbose)
 end
 
@@ -555,7 +555,7 @@ Remove package `pkg`, use `--force` if `force` == `true`
 function rm(pkg::StringOrPkg; verbose::Bool=false, force::Bool=false) end
 
 function rm(pkg::AbstractString; verbose::Bool=false, force::Bool=true)
-    brew(`rm --ignore-dependencies $pkg`; verbose=verbose, force=force)
+    brew(`rm $pkg`; verbose=verbose, force=force)
 end
 
 function rm(pkg::BrewPkg; verbose::Bool=false, force::Bool=true)
