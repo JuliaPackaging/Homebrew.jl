@@ -641,7 +641,8 @@ function osx_version_string()
         "10.11" => "el_capitan",
         "10.12" => "sierra",
         "10.13" => "high_sierra",
-        "10.14" => "mojave"
+        "10.14" => "mojave",
+        "10.15" => "catalina"
     )[OSX_VERSION[1]]
 end
 
