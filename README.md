@@ -1,3 +1,7 @@
+# Unmaintained
+
+Note: This package is **unmaintained**, all users are _strongly_ encouraged to use [JLL packages](https://github.com/JuliaPackaging/Yggdrasil/#using-the-generated-tarballs) for their binary needs.
+
 # Homebrew.jl (OSX only)
 
 [![Build Status](https://travis-ci.org/JuliaPackaging/Homebrew.jl.svg)](https://travis-ci.org/JuliaPackaging/Homebrew.jl)
